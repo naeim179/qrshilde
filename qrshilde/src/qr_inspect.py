@@ -1,0 +1,1 @@
+# Inspect payload inside QR

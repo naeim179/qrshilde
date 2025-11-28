@@ -1,35 +1,38 @@
-from qrshilde.src.ai.analyzer import analyze_qr_payload
-from qrshilde.src.utils.extractor import extract_metadata
 import argparse
+from pathlib import Path
+
+from qrshilde.src.ai.analyzer import analyze_qr_payload
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Analyze QR content with AI & local heuristics.")
+    parser = argparse.ArgumentParser(
+        description="Analyze QR code text payload and generate a security report."
+    )
+
     parser.add_argument(
         "--text",
-        help="Raw decoded QR text to analyze",
+        type=str,
+        required=True,
+        help="QR text content (decoded).",
     )
+
     parser.add_argument(
         "--out",
-        help="Optional path to save markdown report",
-        default=None,
+        type=str,
+        default="report.md",
+        help="Output Markdown report file.",
     )
 
     args = parser.parse_args()
+    qr_text = args.text
+    out_file = Path(args.out)
 
-    if not args.text:
-        print("[!] Please provide --text with decoded QR content.")
-        return
+    print("[+] Analyzing QR payload...")
+    result = analyze_qr_payload(qr_text)
 
-    analysis = analyze_qr_payload(args.text)
-    report_md = build_markdown_report(analysis)
-
-    if args.out:
-        with open(args.out, "w", encoding="utf-8") as f:
-            f.write(report_md)
-        print(f"[+] Report saved to {args.out}")
-    else:
-        print(report_md)
+    report_md = result["report_md"]
+    out_file.write_text(report_md, encoding="utf-8")
+    print(f"[+] Report saved to {out_file}")
 
 
 if __name__ == "__main__":

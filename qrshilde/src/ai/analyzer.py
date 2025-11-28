@@ -1,7 +1,8 @@
-from .openai_client import ask_model
-from .prompts import build_qr_analysis_prompt
-from src.analysis.classifier import extract_basic_meta
-from src.analysis.risk_score import basic_risk_score
+from qrshilde.src.ai.openai_client import ask_model
+from qrshilde.src.analysis.classifier import extract_basic_meta
+from qrshilde.src.analysis.risk import score_risk
+from qrshilde.src.analysis.report import build_report
+
 
 
 def analyze_qr_payload(payload: str) -> dict:

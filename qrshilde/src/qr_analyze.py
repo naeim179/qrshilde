@@ -1,6 +1,6 @@
+from qrshilde.src.ai.analyzer import analyze_qr_payload
+from qrshilde.src.utils.extractor import extract_metadata
 import argparse
-from src.ai.analyzer import analyze_qr_payload
-from src.ai.report_generator import build_markdown_report
 
 
 def main():

@@ -2,12 +2,12 @@
 
 from __future__ import annotations
 from datetime import datetime, timezone
-from typing import Dict, Any, Optional, List
+from typing import Dict, Any, Optional
 
 from qrshilde.src.analysis.classifier import extract_basic_meta, detect_attacks
 from qrshilde.src.analysis.risk import score_from_attacks, risk_level
 from qrshilde.src.analysis.report import build_report_markdown
-from qrshilde.src.ai.openai_client import ask_model_safe  # شوف الملاحظة تحت
+from qrshilde.src.ai.openai_client import ask_model_safe
 from qrshilde.src.ai.prompts import build_qr_analysis_prompt
 
 
@@ -34,14 +34,17 @@ def analyze_qr_payload(qr_text: str) -> Dict[str, Any]:
     ai_raw: Optional[Any] = None
 
     try:
-        prompt = build_qr_analysis_prompt(qr_text, meta, attacks, risk_score, level)
+        # ❗ مهم: نمرر بس (qr_text, meta) لأن الفنكشن متعرفة هيك
+        prompt = build_qr_analysis_prompt(qr_text, meta)
+
+        # ask_model_safe بترجع (ok, result) حيث result = نص أو None
         ok, result = ask_model_safe(prompt)
-        if ok:
-            ai_raw = result
-            # لو result عندك أصلاً Markdown خليه زي ما هو
-            ai_text = result.get("markdown") or result.get("text") or str(result)
+
+        if ok and result is not None:
+            ai_text = result          # هذا هو النص اللي يرجع من Groq
+            ai_raw = result           # نخزنه كـ raw كمان لو حاب نستفيد منه بعدين
         else:
-            ai_error = result  # رسالة خطأ من ask_model_safe
+            ai_error = result         # هنا result عبارة عن سترنج فيها رسالة الخطأ
     except Exception as e:
         ai_error = f"AI error: {e}"
 
@@ -66,7 +69,7 @@ def analyze_qr_payload(qr_text: str) -> Dict[str, Any]:
         "risk_score": risk_score,
         "risk_level": level,
         "ai": {
-            "enabled": ai_text is not None,
+            "enabled": ai_text is not None and ai_error is None,
             "error": ai_error,
             "raw": ai_raw,
             "summary": ai_text,

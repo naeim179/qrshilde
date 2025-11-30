@@ -1,72 +1,41 @@
+# qrshilde/src/analysis/risk.py
+
 from __future__ import annotations
-from typing import Any, Dict, Optional
+from typing import List, Dict, Any
 
 
-def score_risk(
-    qr_text: str,
-    meta: Optional[Dict[str, Any]] = None,
-    ai_section: Optional[str] = None,
-) -> int:
+def score_from_attacks(attacks: List[Dict[str, Any]]) -> int:
     """
-    Very simple heuristic risk score for a QR payload.
-    Returns an integer from 0 to 100.
-
-    - Uses URL patterns (login, reset, etc.)
-    - Uses metadata (qr_type, scheme, domain) if available.
-    - Ignores ai_section for now, but kept in the signature for future use.
+    Convert detected attacks into a numeric risk score (0–100).
+    Simple heuristic: نجمع الأوزان ونقصهم لو زادوا كثير.
     """
+    if not attacks:
+        return 10  # قليل جداً بس مش صفر
 
-    meta = meta or {}
-    qr_type = meta.get("qr_type", "").lower()
-    scheme = meta.get("scheme", "").lower()
-    domain = str(meta.get("domain", "")).lower()
-    path = str(meta.get("path", "")).lower()
+    weights = {
+        "login_page_url": 25,
+        "suspicious_domain_pattern": 20,
+        "qrljacking_candidate": 35,
+    }
 
-    score = 10  # base
+    score = 0
+    for attack in attacks:
+        attack_id = attack.get("id")
+        score += weights.get(attack_id, 10)
 
-    # 1) نوع المحتوى
-    if qr_type == "url":
-        score += 10
-
-    # 2) بروتوكول
-    if scheme == "http":  # no TLS
-        score += 25
-    elif scheme == "https":
-        score += 5
-
-    # 3) كلمات مشبوهة في الـ URL
-    risky_keywords = [
-        "login",
-        "signin",
-        "reset",
-        "verify",
-        "update",
-        "password",
-        "2fa",
-        "bank",
-        "wallet",
-    ]
-    full = (domain + path + " " + qr_text).lower()
-    for kw in risky_keywords:
-        if kw in full:
-            score += 15
-            break
-
-    # 4) IP-based links (بدل دومين)
-    import re
-
-    ip_pattern = re.compile(r"\b\d{1,3}(\.\d{1,3}){3}\b")
-    if ip_pattern.search(full):
-        score += 20
-
-    # 5) لو الدومين غريب / طويل كثير
-    if len(domain) > 25:
-        score += 5
-
-    # clamp 0–100
-    if score < 0:
-        score = 0
-    if score > 100:
-        score = 100
-
+    # نحط حدود منطقية
+    score = max(0, min(score, 95))
     return score
+
+
+def risk_level(score: int) -> str:
+    """
+    Translate numeric score into human-readable bucket.
+    """
+    if score >= 80:
+        return "Critical"
+    if score >= 60:
+        return "High"
+    if score >= 40:
+        return "Medium"
+    return "Low"

@@ -11,3 +11,9 @@ report.md
 # Virtual environments
 venv/
 .env/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+.env

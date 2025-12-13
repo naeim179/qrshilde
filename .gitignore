@@ -17,3 +17,9 @@ __pycache__/
 *.pyc
 .venv/
 .env
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+.env

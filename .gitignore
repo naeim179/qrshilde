@@ -1,25 +1,16 @@
-# Hide API keys
+# env / secrets
 .env
 
-# Python cache
-__pycache__/
-*.pyc
-
-# Reports generated
-report.md
-
-# Virtual environments
+# virtual env
+.venv/
 venv/
-.env/
 
-# Python
+# python cache
 __pycache__/
 *.pyc
-.venv/
-.env
+*.pyo
 
-# Python
-__pycache__/
-*.pyc
-.venv/
-.env
+# OS / editor
+.DS_Store
+.vscode/
+.idea/

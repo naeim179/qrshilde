@@ -1,24 +1,25 @@
+# QR Security Analysis Report
 
-- Generated at: `2025-11-30T18:28:55.579068+00:00`
-- Risk Score: **25/100**
+- Generated at: `2025-12-19T13:19:26.065748+00:00`
+- Risk Score: **10/100**
 - Risk Level: **Low**
 
 ## QR Content
 
 ```text
-https://suspicious-login-example.com/login.php
+https://viruseexample.com/
 ```
 
 ## Detected Metadata
 
 - **qr_type**: `URL`
 - **scheme**: `https`
-- **domain**: `suspicious-login-example.com`
-- **path**: `/login.php`
+- **domain**: `viruseexample.com`
+- **path**: `/`
 
 ## Detected Issues (Rule-based)
 
-- **Login-like URL** (_medium_): Path '/login.php' contains login-related keyword; might be a phishing login page.
+- No specific attack patterns detected by rule engine.
 
 ## AI Analysis
 
@@ -26,22 +27,23 @@ https://suspicious-login-example.com/login.php
 - Type: URL QR Code
 - Attack Type: Phishing
 
-**Risk Level:** HIGH
+**Risk Level: HIGH**
 
 **Reasons:**
 
-* The QR code is a URL, which is a common vector for phishing attacks.
-* The domain 'suspicious-login-example.com' is suspicious and may be a spoofed or compromised website.
-* The path '/login.php' suggests a login page, which is a common target for phishing attacks.
-* The lack of query parameters makes it difficult to determine the purpose of the URL.
+* The QR code points to a URL with a suspicious domain name 'viruseexample.com', which may be a typo or a malicious domain.
+* The URL does not contain any query parameters, which could indicate a generic phishing attempt.
+* The QR code does not provide any context or information about the intended destination, making it more likely to be a phishing attempt.
 
 **Recommendations:**
 
-* **Avoid scanning the QR code**: Do not scan the QR code, as it may lead to a phishing attack.
-* **Verify the URL manually**: Manually enter the URL in a browser to verify its authenticity.
-* **Use a secure connection**: Ensure the URL starts with 'https' and the certificate is valid.
-* **Be cautious of login pages**: Be cautious when accessing login pages, especially if they are accessed via a QR code.
-* **Use a QR code scanner with built-in security features**: Use a QR code scanner that can detect and block malicious QR codes.
-* **Educate users**: Educate users on the risks associated with QR code phishing attacks and how to avoid them.
+* Avoid scanning the QR code.
+* Do not click on any links from unknown sources.
+* Verify the authenticity of the QR code by contacting the intended sender.
+* Use a reputable antivirus software to scan the device for any potential malware.
+* Consider using a QR code scanner that can detect and block malicious QR codes.
+* Be cautious when using public Wi-Fi networks and avoid accessing sensitive information.
 
 ## Risk Interpretation
+
+- **Low Risk**: No strong red flags, but always stay cautious with unknown QRs.

@@ -47,3 +47,11 @@ uvloop==0.22.1
 websockets==15.0.1
 xmlrpclib==1.0.1
 zstandard==0.25.0
+requests
+opencv-python-headless
+qrcode
+pillow
+opencv-python-headless
+qrcode
+pillow
+requests

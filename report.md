@@ -1,48 +1,61 @@
 # QR Security Analysis Report
 
-- Generated at: `2025-12-19T13:19:26.065748+00:00`
-- Risk Score: **10/100**
+- Generated at: `2026-01-12T18:30:19.037116+00:00`
+- Risk Score: **25/100**
 - Risk Level: **Low**
 
 ## QR Content
 
 ```text
-https://viruseexample.com/
+https://whatsapp-secure-login.com/auth?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9
 ```
 
 ## Detected Metadata
 
 - **qr_type**: `URL`
 - **scheme**: `https`
-- **domain**: `viruseexample.com`
-- **path**: `/`
+- **domain**: `whatsapp-secure-login.com`
+- **path**: `/auth`
+- **query params**: present
 
 ## Detected Issues (Rule-based)
 
-- No specific attack patterns detected by rule engine.
+- **Login-like URL** (_medium_): Path '/auth' contains login-related keyword.
 
 ## AI Analysis
 
-**Classification:**
-- Type: URL QR Code
-- Attack Type: Phishing
+### Security Analysis Report: QR Payload
 
-**Risk Level: HIGH**
+| Category | Detail |
+| :--- | :--- |
+| **QR Type** | URL (Deep link / Auth link) |
+| **Attack Type** | Phishing (Credential/Session Token Harvesting) / Brand Impersonation (Typosquatting) |
+| **Obfuscation** | Uses HTTPS (False sense of security). Domain structure mimics legitimate brand (WhatsApp). Query parameter uses a JWT format to appear technical and authentic. |
 
-**Reasons:**
+---
 
-* The QR code points to a URL with a suspicious domain name 'viruseexample.com', which may be a typo or a malicious domain.
-* The URL does not contain any query parameters, which could indicate a generic phishing attempt.
-* The QR code does not provide any context or information about the intended destination, making it more likely to be a phishing attempt.
+### 1) Classification
 
-**Recommendations:**
+**Type:** URL
+**Attack Type:** Phishing (targeting session tokens or credentials). This specifically mimics a QR login system (potential QRLjacking attempt).
 
-* Avoid scanning the QR code.
-* Do not click on any links from unknown sources.
-* Verify the authenticity of the QR code by contacting the intended sender.
-* Use a reputable antivirus software to scan the device for any potential malware.
-* Consider using a QR code scanner that can detect and block malicious QR codes.
-* Be cautious when using public Wi-Fi networks and avoid accessing sensitive information.
+### 2) Risk Level
+
+**CRITICAL**
+
+### 3) Reasons
+
+*   **Brand Impersonation:** The domain `whatsapp-secure-login.com` is a clear instance of typosquatting/brand mimicry, designed to trick users who expect a secure WhatsApp login flow.
+*   **High Impact Target:** The target is WhatsApp, a critical communication platform. Successful compromise leads to full account takeover, contact theft, and access to private communications.
+*   **Credential Harvesting Intent:** The combination of the path `/auth` and the presence of a structured token (`token=eyJ...` - which appears to be a JWT) is a classic setup for stealing active session tokens or tricking the user into providing credentials.
+*   **Deceptive Security:** The use of `https` lends a false sense of security, encouraging users to trust the link despite the fraudulent domain.
+
+### 4) Recommendations
+
+*   **Domain Takedown:** Immediately report the domain `whatsapp-secure-login.com` to registrars and hosting providers for suspension/takedown due to phishing activity.
+*   **Network Blocking:** Implement network-level filtering (DNS sinkholing, proxy/WAF rules) to block access to this malicious domain across organizational endpoints.
+*   **User Education:** Train users to scrutinize the full domain name before interacting with any "secure login" prompts, especially for messaging apps. They should confirm the domain is the official, verifiable one (e.g., `whatsapp.com`).
+*   **Client Protection:** Security software should be configured to flag and block URLs that utilize known brand names combined with generic "secure" or "login" suffixes.
 
 ## Risk Interpretation
 

@@ -1,57 +1,65 @@
 import os
 from pathlib import Path
-
 from dotenv import load_dotenv
-from groq import Groq  # نستخدم Groq بدل OpenAI
+import google.generativeai as genai
+from groq import Groq
 
-# 📌 حدد مسار الروت تبع المشروع (اللي فيه ملف .env)
+# 📌 تحديد مسار الروت وتحميل المتغيرات
 ROOT_DIR = Path(__file__).resolve().parents[3]
 ENV_PATH = ROOT_DIR / ".env"
-
-# 🟢 حمّل المتغيرات من ملف .env من مسار ثابت
 load_dotenv(dotenv_path=ENV_PATH)
-
 
 def ai_enabled() -> bool:
     """
-    Check if GROQ_API_KEY is available (after loading .env).
+    Returns True if AT LEAST one API key is available.
     """
-    return os.getenv("GROQ_API_KEY") is not None
+    has_gemini = os.getenv("GEMINI_API_KEY") is not None
+    has_groq = os.getenv("GROQ_API_KEY") is not None
+    return has_gemini or has_groq
 
-
-def get_client() -> Groq | None:
+def ask_gemini(prompt: str) -> str | None:
     """
-    Return a Groq client if the API key is set, otherwise None.
+    محاولة الاتصال بموديل Gemini
+    """
+    api_key = os.getenv("GEMINI_API_KEY")
+    if not api_key:
+        return None  # المفتاح غير موجود، ننتقل للتالي
+
+    try:
+        genai.configure(api_key=api_key)
+        
+        # ✅ التعديل هنا: استخدام الموديل العام والمستقر للباقة المجانية
+        model = genai.GenerativeModel('gemini-flash-latest')
+        
+        # دمج تعليمات النظام مع البرومبت
+        full_prompt = (
+            "You are a cybersecurity expert analyzing a QR payload. "
+            "Identify attacks, risks, and obfuscation. Be concise.\n"
+            f"Payload to analyze: {prompt}"
+        )
+        
+        response = model.generate_content(full_prompt)
+        return response.text
+    except Exception as e:
+        print(f"[⚠️] Gemini Error: {e}")
+        return None # فشل الاتصال، نرجع None عشان نجرب Groq
+
+def ask_groq(prompt: str) -> str | None:
+    """
+    محاولة الاتصال بموديل Groq (احتياطي)
     """
     api_key = os.getenv("GROQ_API_KEY")
     if not api_key:
-        print("[!] GROQ_API_KEY not set.")
-        return None
-
-    return Groq(api_key=api_key)
-
-
-def ask_model(prompt: str) -> str | None:
-    """
-    Send the prompt to the Groq model and return the response text.
-    If AI is disabled or an error occurs, return None.
-    """
-    client = get_client()
-    if client is None:
-        print("[!] AI disabled: no GROQ_API_KEY set.")
         return None
 
     try:
+        client = Groq(api_key=api_key)
         resp = client.chat.completions.create(
-            model="llama-3.1-8b-instant",  # موديل Groq (تقدر تغيّره لاحقاً)
+            model="llama-3.1-8b-instant",
             messages=[
                 {
                     "role": "system",
-                    "content": (
-                        "You are a security assistant that analyzes QR code payloads. "
-                        "Explain what the QR does, classify the attack type if any, "
-                        "estimate risk, and suggest mitigations. Keep it concise."
-                    ),
+                    "content": "You are a cybersecurity expert. Analyze this QR payload concisely."
                 },
                 {"role": "user", "content": prompt},
             ],
@@ -59,17 +67,41 @@ def ask_model(prompt: str) -> str | None:
         )
         return resp.choices[0].message.content
     except Exception as e:
-        print(f"[!] AI error: {e}")
+        print(f"[⚠️] Groq Error: {e}")
         return None
 
+def ask_model(prompt: str) -> str | None:
+    """
+    الدالة الرئيسية الذكية:
+    1. تحاول Gemini أولاً.
+    2. إذا فشل، تحاول Groq.
+    3. إذا فشل الاثنان، تعتذر.
+    """
+    # 1️⃣ المحاولة الأولى: Google Gemini
+    print("   [..] Trying Google Gemini...")
+    result = ask_gemini(prompt)
+    if result:
+        return result
+
+    # 2️⃣ المحاولة الثانية: Groq (Fallback)
+    print("   [..] Gemini unavailable, switching to Groq...")
+    result = ask_groq(prompt)
+    if result:
+        return result
+
+    # 3️⃣ الكل فشل
+    print("[!] All AI models failed or keys are missing.")
+    return None
 
 def ask_model_safe(prompt: str):
     """
-    Wrapper يرجّع (ok, result_or_error_string)
+    Wrapper لضمان عدم توقف البرنامج عند الأخطاء
     """
     try:
         result = ask_model(prompt)
-        return True, result
+        if result:
+            return True, result
+        else:
+            return False, "AI Analysis unavailable (Check API keys or Quota)."
     except Exception as e:
-        print(f"[!] AI error (safe): {e}")
         return False, str(e)

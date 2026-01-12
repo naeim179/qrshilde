@@ -1,3 +1,4 @@
+#D:\github-projects\qrshilde\qrshilde\src\qr_analyze.py
 import argparse
 from pathlib import Path
 

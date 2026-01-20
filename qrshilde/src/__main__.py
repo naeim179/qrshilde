@@ -23,26 +23,27 @@ def main():
     p = argparse.ArgumentParser(prog="qrshilde")
     sub = p.add_subparsers(dest="cmd", required=True)
 
-    # 1. Decode Command
-    d = sub.add_parser("decode", help="Decode QR from image")
+    # 1. Decode Command (Old Utility)
+    d = sub.add_parser("decode", help="Decode QR from image (Basic)")
     d.add_argument("image", help="Path to image (png/jpg)")
-    d.add_argument("rest", nargs=argparse.REMAINDER, help="Extra args forwarded to qr_decode.py")
+    d.add_argument("rest", nargs=argparse.REMAINDER, help="Extra args")
 
     # 2. Generate Command
     g = sub.add_parser("gen", help="Generate QR image")
-    g.add_argument("text", help="Text/payload")
-    g.add_argument("-o", "--out", default="out.png", help="Output image path")
-    g.add_argument("rest", nargs=argparse.REMAINDER, help="Extra args forwarded to qr_generate.py")
+    g.add_argument("text", help="Text/payload to encode")
+    g.add_argument("-o", "--out", default="qrcode.png", help="Output image path")
+    g.add_argument("rest", nargs=argparse.REMAINDER, help="Extra args")
 
-    # 3. Analyze Command (هنا كان التعديل)
-    a = sub.add_parser("analyze", help="Analyze decoded QR content")
-    a.add_argument("target", help="Image path OR decoded text (depends on your script)")
-    a.add_argument("rest", nargs=argparse.REMAINDER, help="Extra args forwarded to qr_analyze.py")
+    # 3. Analyze Command (The Main Feature 🌟)
+    a = sub.add_parser("analyze", help="Analyze QR content (Text OR Image)")
+    a.add_argument("target", help="Image path OR decoded text")
+    a.add_argument("-o", "--out", default="report.md", help="Output report file")
+    a.add_argument("rest", nargs=argparse.REMAINDER, help="Extra args")
 
-    # 4. Inspect Command
-    i = sub.add_parser("inspect", help="Inspect QR payload / classify")
-    i.add_argument("target", help="Image path OR decoded text (depends on your script)")
-    i.add_argument("rest", nargs=argparse.REMAINDER, help="Extra args forwarded to qr_inspect.py")
+    # 4. Inspect Command (Old Utility)
+    i = sub.add_parser("inspect", help="Inspect QR payload (Basic Classification)")
+    i.add_argument("target", help="Decoded text")
+    i.add_argument("rest", nargs=argparse.REMAINDER, help="Extra args")
 
     args = p.parse_args()
 
@@ -52,14 +53,17 @@ def main():
         run_script_main(qr_decode, [args.image] + args.rest)
 
     elif args.cmd == "gen":
+        # تمرير النص مباشرة (Positional)
         run_script_main(qr_generate, [args.text, "-o", args.out] + args.rest)
 
     elif args.cmd == "analyze":
-        # ✅ التعديل هنا: أضفنا "--text" ليتم تمريرها للمحلل
-        run_script_main(qr_analyze, ["--text", args.target] + args.rest)
+        # ✅ التعديل هنا: نمرر "--text" لأن argparse داخل qr_analyze يتوقعها
+        # رغم أننا سميناها "target" هنا، الملف الداخلي يتوقع --text أو Positional حسب برمجته
+        # لكن لحظة! نحن عدلنا qr_analyze ليقبل --text كوسيط إجباري (Required).
+        run_script_main(qr_analyze, ["--text", args.target, "--out", args.out] + args.rest)
 
     elif args.cmd == "inspect":
-        run_script_main(qr_inspect, [args.target] + args.rest)
+        run_script_main(qr_inspect, ["--text", args.target] + args.rest)
 
 
 if __name__ == "__main__":

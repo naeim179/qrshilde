@@ -93,15 +93,18 @@ def ask_model(prompt: str) -> str | None:
     print("[!] All AI models failed or keys are missing.")
     return None
 
-def ask_model_safe(prompt: str):
+def ask_model_safe(prompt):
     """
-    Wrapper لضمان عدم توقف البرنامج عند الأخطاء
+    نسخة معدلة تقبل النصوص والصور (List of inputs)
     """
     try:
-        result = ask_model(prompt)
-        if result:
-            return True, result
-        else:
-            return False, "AI Analysis unavailable (Check API keys or Quota)."
+        model = genai.GenerativeModel('gemini-1.5-flash') # نستخدم موديل سريع وذكي
+        
+        # التأكد أن المدخلات قائمة (عشان لو أرسلنا نص + صورة)
+        if isinstance(prompt, str):
+            prompt = [prompt]
+            
+        response = model.generate_content(prompt)
+        return True, response.text
     except Exception as e:
         return False, str(e)

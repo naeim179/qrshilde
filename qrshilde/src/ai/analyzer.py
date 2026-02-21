@@ -1,78 +1,68 @@
-# qrshilde/src/ai/analyzer.py
+import re, datetime, os, asyncio
+from qrshilde.src.ai.openai_client import ask_model 
+from qrshilde.src.tools.malicious_pattern_detector import scan_for_patterns
+from qrshilde.src.tools.wifi_auto_connect_detector import detect_wifi_threats
 
-from __future__ import annotations
-from datetime import datetime, timezone
-from typing import Dict, Any, Optional
-
-from qrshilde.src.analysis.classifier import extract_basic_meta, detect_attacks
-from qrshilde.src.analysis.risk import score_from_attacks, risk_level
-from qrshilde.src.analysis.report import build_report_markdown
-from qrshilde.src.ai.openai_client import ask_model_safe
-from qrshilde.src.ai.prompts import build_qr_analysis_prompt
-
-
-def analyze_qr_payload(qr_text: str) -> Dict[str, Any]:
-    """
-    Main entry point for QR analysis.
-    Returns a dict suitable for:
-      - CLI Markdown report
-      - future JSON API / frontend
-    """
-    generated_at = datetime.now(timezone.utc).isoformat()
-
-    # 1) Basic metadata
-    meta = extract_basic_meta(qr_text)
-
-    # 2) Rule-based attack detection
-    attacks = detect_attacks(qr_text, meta)
-    risk_score = score_from_attacks(attacks)
-    level = risk_level(risk_score)
-
-    # 3) Optional AI analysis
-    ai_text: Optional[str] = None
-    ai_error: Optional[str] = None
-    ai_raw: Optional[Any] = None
-
+async def capture_screenshot(url, report_id):
+    """التقاط صورة للموقع المشبوه كدليل بصري"""
     try:
-        # ❗ مهم: نمرر بس (qr_text, meta) لأن الفنكشن متعرفة هيك
-        prompt = build_qr_analysis_prompt(qr_text, meta)
-
-        # ask_model_safe بترجع (ok, result) حيث result = نص أو None
-        ok, result = ask_model_safe(prompt)
-
-        if ok and result is not None:
-            ai_text = result          # هذا هو النص اللي يرجع من Groq
-            ai_raw = result           # نخزنه كـ raw كمان لو حاب نستفيد منه بعدين
-        else:
-            ai_error = result         # هنا result عبارة عن سترنج فيها رسالة الخطأ
+        from playwright.async_api import async_playwright
+        screenshot_name = f"evidence_{report_id}.png"
+        # المسار يجب أن يكون داخل static/uploads ليظهر في الويب
+        screenshot_path = os.path.join("static", "uploads", screenshot_name)
+        
+        async with async_playwright() as p:
+            browser = await p.chromium.launch(headless=True)
+            page = await browser.new_page()
+            # انتظار 10 ثوانٍ كحد أقصى لتحميل الموقع
+            await page.goto(url, timeout=10000, wait_until="networkidle")
+            await page.screenshot(path=screenshot_path)
+            await browser.close()
+        return f"/static/uploads/{screenshot_name}"
     except Exception as e:
-        ai_error = f"AI error: {e}"
+        print(f"[⚠️] Screenshot skipped: {e}")
+        return None
 
-    # 4) Build Markdown report
-    report_md = build_report_markdown(
-        qr_text=qr_text,
-        meta=meta,
-        risk_score=risk_score,
-        risk_level=level,
-        attacks=attacks,
-        ai_section=ai_text,
-        ai_error=ai_error,
-        generated_at=generated_at,
-    )
+async def analyze_qr_payload(payload, report_id):
+    findings = []
+    risk_score = 0
+    payload_lower = payload.lower()
 
-    # 5) JSON-style structured output
+    # 1. القواعد المحلية (Local Rules)
+    pattern_issues = scan_for_patterns(payload)
+    if pattern_issues:
+        findings.extend(pattern_issues)
+        risk_score += 40
+
+    brands = ["paypal", "google", "microsoft", "apple", "netflix", "binance"]
+    for brand in brands:
+        if brand in payload_lower and f"{brand}.com" not in payload_lower:
+            findings.append(f"Phishing: Possible {brand.capitalize()} impersonation")
+            risk_score += 60
+
+    if any(word in payload_lower for word in ["urgent", "login", "verify", "update", "secure"]):
+        findings.append("NLP: High-urgency intent detected")
+        risk_score += 25
+
+    # 2. التقاط صورة الموقع (Evidence)
+    evidence_img = None
+    if payload.startswith(("http", "www")):
+        print(f"[*] Capturing screenshot for evidence...")
+        evidence_img = await capture_screenshot(payload, report_id)
+
+    # 3. استدعاء الذكاء الاصطناعي للتحليل العميق
+    print(f"[*] Fetching AI Analysis...")
+    ai_opinion = ask_model(f"Analyze this QR payload and provide a security verdict: {payload}")
+    
+    risk_score = min(risk_score, 100)
+    category = "MALICIOUS" if risk_score >= 70 else "SUSPICIOUS" if risk_score >= 35 else "SAFE"
+
     return {
-        "qr_text": qr_text,
-        "generated_at": generated_at,
-        "meta": meta,
-        "attacks": attacks,
+        "category": category,
         "risk_score": risk_score,
-        "risk_level": level,
-        "ai": {
-            "enabled": ai_text is not None and ai_error is None,
-            "error": ai_error,
-            "raw": ai_raw,
-            "summary": ai_text,
-        },
-        "report_md": report_md,
+        "findings": findings,
+        "ai_analysis": ai_opinion if ai_opinion else "AI Analysis unavailable.",
+        "payload": payload,
+        "evidence_img": evidence_img, # رابط صورة الموقع
+        "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     }

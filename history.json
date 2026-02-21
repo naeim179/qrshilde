@@ -1,0 +1,89 @@
+[
+    {
+        "category": "SAFE",
+        "risk_score": 0,
+        "findings": [],
+        "ai_analysis": "**Security Verdict: SAFE**\n\n**Analysis:**\n*   **Target URL:** `https://www.wikipedia.org`\n*   **Attacks:** None identified. The destination is a well-known, high-reputation informational site.\n*   **Risks:** Negligible. The site uses HTTPS (TLS encryption), ensuring the integrity and confidentiality of the connection.\n*   **Obfuscation:** None. The URL is transparent, uses no shortening services (e.g., bit.ly), and contains no homograph (look-alike character) tricks or encoded characters.\n\n**Conclusion:** This is a benign link to a legitimate domain.",
+        "payload": "https://www.wikipedia.org",
+        "evidence_img": "/static/uploads/evidence_20260221_182118.png",
+        "timestamp": "2026-02-21 18:22:05",
+        "image_url": "/static/uploads/20260221_182118.png"
+    },
+    {
+        "category": "MALICIOUS",
+        "risk_score": 85,
+        "findings": [
+            "Phishing: Possible Paypal impersonation",
+            "NLP: High-urgency intent detected"
+        ],
+        "ai_analysis": "### Analysis of QR Payload\n\n**Payload:** `http://secure-paypal-update.com/login?verify=true&urgent=1`\n\n#### 1. Identified Attacks\n*   **Phishing / Credential Harvesting:** The site impersonates PayPal to steal login credentials.\n*   **Brand Spoofing:** Use of \"paypal\" in a non-official domain to deceive users.\n*   **Typosquatting/Lookalike Domain:** Using a domain that looks legitimate (`secure-paypal-update.com`) but is not owned by the official entity (`paypal.com`).\n\n#### 2. Security Risks\n*   **Identity Theft:** High risk of account takeover and financial loss.\n*   **Insecure Protocol (HTTP):** The payload uses `http://` instead of `https://`. Any data entered is sent in plaintext and susceptible to Man-in-the-Middle (MitM) sniffing.\n*   **Social Engineering:** The parameters `verify=true` and `urgent=1` are designed to trigger a psychological \"fear of loss\" or \"sense of urgency\" to bypass critical thinking.\n\n#### 3. Obfuscation Techniques\n*   **Semantic Camouflage:** Using keywords like \"secure\" and \"update\" to build false trust.\n*   **URL Parameter Manipulation:** Using legitimate-looking query strings to make the URL appear functional and official.\n*   **Visual Obfuscation:** While the text is clear, QR codes themselves are a form of obfuscation, as humans cannot read the underlying URL without scanning it first (Quishing).\n\n**Verdict: MALICIOUS.** This is a high-risk phishing link. Do not visit.",
+        "payload": "http://secure-paypal-update.com/login?verify=true&urgent=1",
+        "timestamp": "2026-02-21 17:59:01",
+        "image_url": "/static/uploads/20260221_175813.png",
+        "report_file": "reports\\Report_20260221_175813.md"
+    },
+    {
+        "category": "MALICIOUS",
+        "risk_score": 85,
+        "findings": [
+            "Phishing: Possible Paypal impersonation",
+            "NLP: High-urgency intent detected"
+        ],
+        "ai_analysis": "### Analysis: High-Risk Phishing Attempt\n\n**1. Attack Type: Credential Harvesting**\n*   **Phishing:** The domain impersonates PayPal to steal login credentials.\n*   **Typosquatting/Look-alike Domain:** `secure-paypal-update.com` is not an official PayPal domain (`paypal.com`). It uses a common \"brand + keyword\" structure to appear legitimate.\n\n**2. Security Risks**\n*   **Social Engineering:** The parameters `verify=true` and `urgent=1` are psychological triggers designed to bypass critical thinking and force immediate action.\n*   **Lack of Encryption:** The payload uses **HTTP** instead of **HTTPS**. A legitimate financial institution would never host a login page over an unencrypted connection.\n*   **Identity Theft:** Any data entered (username, password, credit card info) will be captured by the attacker.\n\n**3. Obfuscation & Delivery**\n*   **QR Transparency Issue:** The primary obfuscation is the QR format itself, which masks the malicious URL from visual inspection until the user has already engaged with the device's scanner.\n*   **Keyword Stuffing:** Using \"secure\" and \"update\" in the URL is a deceptive tactic to build false trust.\n\n**Conclusion:** This is a **malicious** payload. Do not interact with this link.",
+        "payload": "http://secure-paypal-update.com/login?verify=true&urgent=1",
+        "timestamp": "2026-02-21 17:56:10",
+        "image_url": "/static/uploads/60b4758f-3391-4903-9564-4cccb13613b4.png"
+    },
+    {
+        "category": "MALICIOUS",
+        "risk_score": 85,
+        "findings": [
+            "Phishing: Possible Paypal impersonation",
+            "NLP: High-urgency intent detected"
+        ],
+        "ai_analysis": "### Analysis: Malicious QR Payload (Quishing)\n\n**1. Attack Type: Quishing (QR Phishing)**\nThis is a classic \"Quishing\" attack where a QR code is used to bypass email filters and link-scanners to deliver a malicious URL.\n\n**2. Obfuscation & Deception Techniques**\n*   **Typosquatting/Brand Spoofing:** The domain `secure-paypal-update.com` mimics the legitimate `paypal.com`. It uses \"secure\" and \"update\" to create a false sense of authority.\n*   **Social Engineering Parameters:** The query strings `?verify=true` and `&urgent=1` are psychological triggers designed to bypass critical thinking by creating a false sense of urgency.\n*   **Insecure Protocol:** The use of `http://` instead of `https://` is a major red flag, indicating no encryption and a lack of a verified SSL certificate.\n\n**3. Primary Risks**\n*   **Credential Theft:** The `/login` path indicates a credential harvesting page designed to steal PayPal usernames and passwords.\n*   **Financial Fraud:** Unauthorized access to the victim\u00e2\u20ac\u2122s financial accounts and linked funding sources.\n*   **Identity Theft:** Potential collection of PII (Personally Identifiable Information) beyond just login credentials (e.g., SSN, address, credit card details).\n\n**4. Conclusion**\n**Verdict: Malicious.** This is a high-risk credential harvesting site. Do not navigate to the URL.",
+        "payload": "http://secure-paypal-update.com/login?verify=true&urgent=1",
+        "timestamp": "2026-02-21 17:54:25",
+        "image_url": "/static/uploads/5545c68e-a66c-47a2-bc69-042062abe903.png"
+    },
+    {
+        "timestamp": "17:38:05",
+        "payload": "http://secure-paypal-update.com/login?verify=true&urgent=1",
+        "risk_score": 98,
+        "risk_level": "MALWARE/PHISHING",
+        "report": "### [FINAL SYSTEM] Hybrid QrShilde Report\n\n**Final Verdict:** MALWARE/PHISHING\n**Global Confidence:** 98/100\n\n#### 1. Semantic & NLP Analysis (IJIS 2024)\n- **Intent Detected:** Malicious Impersonation\n- **Urgency Flags:** urgent, verify, update, login\n- **Entity Match:** Spoofed Entity (paypal)\n\n#### 2. Dual-ML Stacking (RF + XGBoost)\n- **Technical Classification:** MALWARE/PHISHING\n- **Pattern Check:** Standard\n\n#### 3. Visual Inspection (CNN)\nVisual Scan (CNN): Correlated with high-risk pattern signatures.\n",
+        "image_url": "/static/uploads/21c71d45-ebd4-41ac-818a-91419388b018.png"
+    },
+    {
+        "timestamp": "23:35:48",
+        "payload": "http://secure-paypal-update.com/login?verify=true&urgent=1",
+        "risk_score": 98,
+        "risk_level": "MALWARE/PHISHING",
+        "report": "### [FINAL SYSTEM] Hybrid QrShilde Report\n\n**Final Verdict:** MALWARE/PHISHING\n**Global Confidence:** 98/100\n\n#### 1. Semantic & NLP Analysis (IJIS 2024)\n- **Intent Detected:** Malicious Impersonation\n- **Urgency Flags:** urgent, verify, update, login\n- **Entity Match:** Spoofed Entity (paypal)\n\n#### 2. Dual-ML Stacking (RF + XGBoost)\n- **Technical Classification:** MALWARE/PHISHING\n- **Pattern Check:** Standard\n\n#### 3. Visual Inspection (CNN)\nVisual Scan (CNN): Correlated with high-risk pattern signatures.\n",
+        "image_url": "/static/uploads/46a01070-07ef-4820-949a-b9e45a68717b.png"
+    },
+    {
+        "timestamp": "23:35:18",
+        "payload": "https://www.wikipedia.org",
+        "risk_score": 5,
+        "risk_level": "BENIGN",
+        "report": "### [FINAL SYSTEM] Hybrid QrShilde Report\n\n**Final Verdict:** BENIGN\n**Global Confidence:** 5/100\n\n#### 1. Semantic & NLP Analysis (IJIS 2024)\n- **Intent Detected:** Informational/Neutral\n- **Urgency Flags:** None\n- **Entity Match:** Verified\n\n#### 2. Dual-ML Stacking (RF + XGBoost)\n- **Technical Classification:** BENIGN\n- **Pattern Check:** Standard\n\n#### 3. Visual Inspection (CNN)\nVisual Scan (CNN): No physical tampering detected (Dropout 99 Percent).\n",
+        "image_url": "/static/uploads/d0e464e3-d1b1-4255-bd6b-9ab48bafb7e4.png"
+    },
+    {
+        "timestamp": "23:35:07",
+        "payload": "http://45.33.22.11/download/trojan.exe",
+        "risk_score": 98,
+        "risk_level": "MALWARE/PHISHING",
+        "report": "### [FINAL SYSTEM] Hybrid QrShilde Report\n\n**Final Verdict:** MALWARE/PHISHING\n**Global Confidence:** 98/100\n\n#### 1. Semantic & NLP Analysis (IJIS 2024)\n- **Intent Detected:** Informational/Neutral\n- **Urgency Flags:** None\n- **Entity Match:** Verified\n\n#### 2. Dual-ML Stacking (RF + XGBoost)\n- **Technical Classification:** MALWARE/PHISHING\n- **Pattern Check:** Standard\n\n#### 3. Visual Inspection (CNN)\nVisual Scan (CNN): Correlated with high-risk pattern signatures.\n",
+        "image_url": "/static/uploads/5fd629df-2296-4b63-9934-281646f2de0b.png"
+    },
+    {
+        "timestamp": "23:34:54",
+        "payload": "http://45.33.22.11/download/trojan.exe",
+        "risk_score": 98,
+        "risk_level": "MALWARE/PHISHING",
+        "report": "### [FINAL SYSTEM] Hybrid QrShilde Report\n\n**Final Verdict:** MALWARE/PHISHING\n**Global Confidence:** 98/100\n\n#### 1. Semantic & NLP Analysis (IJIS 2024)\n- **Intent Detected:** Informational/Neutral\n- **Urgency Flags:** None\n- **Entity Match:** Verified\n\n#### 2. Dual-ML Stacking (RF + XGBoost)\n- **Technical Classification:** MALWARE/PHISHING\n- **Pattern Check:** Standard\n\n#### 3. Visual Inspection (CNN)\nVisual Scan (CNN): Correlated with high-risk pattern signatures.\n",
+        "image_url": "/static/uploads/10b39793-c335-4d31-8d2b-6eabed8140d1.png"
+    }
+]

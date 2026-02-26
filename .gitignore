@@ -1,16 +1,9 @@
-# env / secrets
-.env
-
-# virtual env
 .venv/
-venv/
-
-# python cache
 __pycache__/
 *.pyc
-*.pyo
-
-# OS / editor
-.DS_Store
-.vscode/
-.idea/
+history.json
+reports/
+static/uploads/
+url_model.pkl
+url_model_meta.json
+demo_results.json

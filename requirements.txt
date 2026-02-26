@@ -9,7 +9,6 @@ google-api-core==2.29.0
 google-api-python-client==2.188.0
 google-auth==2.47.0
 google-auth-httplib2==0.3.0
-google-generativeai==0.8.6
 googleapis-common-protos==1.72.0
 greenlet==3.3.1
 groq==1.0.0
@@ -42,3 +41,8 @@ typing-inspection==0.4.2
 typing_extensions==4.15.0
 uritemplate==4.2.0
 urllib3==2.6.3
+
+google-genai
+scikit-learn
+pandas
+joblib

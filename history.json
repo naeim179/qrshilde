@@ -1,5 +1,334 @@
 [
     {
+        "category": "SUSPICIOUS",
+        "risk_score": 45,
+        "findings": [
+            "Payload type: sms",
+            "SMS QR: May trigger composing/sending an SMS (social engineering risk).",
+            "SMS Heuristic: smishing keywords detected (otp/bank/urgent/verify/...)"
+        ],
+        "ai_analysis": "**Summary:** The payload is an SMSTO protocol link designed to send a text message to a Jordanian phone number (+962799999999) containing a request for urgent bank OTP verification.\n\n**Suspicious signals:**\n- Use of high-pressure, alarmist language ('URGENT')\n- Requests the user to facilitate a bank OTP (One-Time Password) verification, a common tactic in smishing attacks\n- Generic messaging that does not identify a specific financial institution\n\n**Benign signals:**\n- Uses a standard, transparent SMSTO protocol\n\n**Recommendation:** Do not send the pre-filled SMS. If you suspect an issue with your bank account, contact your financial institution directly using an official number from their website or the back of your debit/credit card.",
+        "payload": "SMSTO:+962799999999:URGENT verify your bank OTP now",
+        "evidence_img": null,
+        "ml_result": null,
+        "timestamp": "2026-02-27 00:04:01"
+    },
+    {
+        "category": "MALICIOUS",
+        "risk_score": 75,
+        "findings": [
+            "Payload type: url",
+            "URL Heuristic: brand-in-domain impersonation (paypal)",
+            "URL Heuristic: lure words detected (login/verify/secure/...)",
+            "URL Heuristic: HTTP without TLS",
+            "ML: High benign confidence (0.09)"
+        ],
+        "ai_analysis": "**Summary:** The URL uses the 'paypal' brand name within a non-official domain and utilizes an insecure HTTP connection. This combination is often associated with deceptive websites aiming to mimic legitimate services.\n\n**Suspicious signals:**\n- Domain name contains 'paypal' but is not the official paypal.com domain\n- Use of insecure HTTP protocol instead of HTTPS\n- The '/verify' path is a common pattern in credential harvesting attempts\n- Possible brand impersonation\n\n**Recommendation:** Avoid interacting with this link or providing any sensitive information. Manually type the official service provider's address into your browser to verify any account-related issues.",
+        "payload": "http://secure-paypal-login.com/verify",
+        "evidence_img": null,
+        "ml_result": {
+            "phishing_probability": 0.09466404191219807,
+            "threshold": 0.31,
+            "label": "benign",
+            "reasons": [
+                {
+                    "feature": "special_count",
+                    "impact": 3.100640927130952
+                },
+                {
+                    "feature": "keyword_hits",
+                    "impact": -2.9641292614690773
+                },
+                {
+                    "feature": "tld_len",
+                    "impact": -1.1856700388477308
+                },
+                {
+                    "feature": "dash_count",
+                    "impact": -0.8494355841547918
+                },
+                {
+                    "feature": "path_len",
+                    "impact": -0.32106077444800474
+                }
+            ]
+        },
+        "timestamp": "2026-02-27 00:03:41"
+    },
+    {
+        "category": "SAFE",
+        "risk_score": 0,
+        "findings": [
+            "Payload type: vcard"
+        ],
+        "ai_analysis": "**Summary:** The payload is a vCard contact file that includes a link to an external website masquerading as a PayPal security verification page.\n\n**Suspicious signals:**\n- The domain 'secure-paypal-login.com' uses the 'PayPal' brand name in a non-official context (cybersquatting).\n- The URL uses the unencrypted HTTP protocol rather than HTTPS.\n- The use of a generic 'Support Team' identity is a common tactic in social engineering and phishing.\n- The URL path '/verify' is typical for credential harvesting attempts.\n\n**Benign signals:**\n- The data is structured in a standard, valid vCard 3.0 format.\n\n**Recommendation:** Do not visit the URL or provide any sensitive information. If you need to verify your PayPal account status, visit the official website directly by typing 'paypal.com' into your browser.",
+        "payload": "BEGIN:VCARD\nVERSION:3.0\nFN:Support Team\nURL:http://secure-paypal-login.com/verify\nEND:VCARD",
+        "evidence_img": null,
+        "ml_result": null,
+        "timestamp": "2026-02-26 23:36:49"
+    },
+    {
+        "category": "SAFE",
+        "risk_score": 0,
+        "findings": [
+            "Payload type: tel"
+        ],
+        "ai_analysis": "**Summary:** The payload is a 'tel:' URI scheme intended to initiate a phone call to the number +18005550199. This specific number is part of a block (555-0100 through 555-0199) reserved for fictional use and documentation within the North American Numbering Plan.\n\n**Benign signals:**\n- Uses a standard URI scheme for telephony\n- Target number is a reserved fictional placeholder\n- Toll-free prefix used\n\n**Recommendation:** Treat this as a documentation or test string. In a real-world scenario, users should verify the destination of a phone call before dialing, as 'tel:' links can be used to facilitate vishing or toll fraud.",
+        "payload": "tel:+18005550199",
+        "evidence_img": null,
+        "ml_result": null,
+        "timestamp": "2026-02-26 23:36:41"
+    },
+    {
+        "category": "SAFE",
+        "risk_score": 0,
+        "findings": [
+            "Payload type: sms"
+        ],
+        "ai_analysis": "**Summary:** The payload is an SMS template (SMSTO) pre-configured to send a message to a mobile number in Jordan. The message body contains a high-pressure request for bank OTP verification.\n\n**Suspicious signals:**\n- Use of urgent language ('URGENT') to prompt immediate action.\n- Request for sensitive banking information (OTP), which is a characteristic of smishing attempts.\n- The destination is a standard mobile number rather than an official short code typically used by financial institutions.\n\n**Benign signals:**\n- The phone number is formatted correctly according to international standards.\n\n**Recommendation:** Do not send the SMS. If you are concerned about your bank account, contact your financial institution through their official website or the phone number on the back of your debit/credit card.",
+        "payload": "SMSTO:+962799999999:URGENT verify your bank OTP now",
+        "evidence_img": null,
+        "ml_result": null,
+        "timestamp": "2026-02-26 23:36:34"
+    },
+    {
+        "category": "SUSPICIOUS",
+        "risk_score": 35,
+        "findings": [
+            "Payload type: wifi",
+            "Weak Encryption (WEP) - Easily Hacked."
+        ],
+        "ai_analysis": "**Summary:** The payload is a WiFi configuration string designed to automatically connect a device to a network with the SSID 'FreeWifi' using WEP encryption.\n\n**Suspicious signals:**\n- Uses WEP (Wired Equivalent Privacy) encryption, which is deprecated and considered highly insecure as it can be cracked quickly with standard tools\n- The SSID 'FreeWifi' is a generic name frequently used in rogue access point or 'Evil Twin' attacks\n- The password '12345678' is a very common, weak credential that is easily guessed or brute-forced\n- The hidden network flag (H:true) is set, which is a common tactic for obfuscating non-standard or temporary access points\n\n**Benign signals:**\n- Utilizes the standard WiFi URI scheme compatible with most mobile devices\n- All required parameters (SSID, security type, and password) are explicitly defined\n\n**Recommendation:** Use caution before connecting to this network. WEP encryption does not provide modern security protections. If you must connect, use a VPN to encrypt your traffic and avoid logging into sensitive accounts or performing financial transactions.",
+        "payload": "WIFI:T:WEP;S:FreeWifi;P:12345678;H:true;;",
+        "evidence_img": null,
+        "ml_result": null,
+        "timestamp": "2026-02-26 23:36:26"
+    },
+    {
+        "category": "SAFE",
+        "risk_score": 0,
+        "findings": [
+            "Payload type: url",
+            "ML: High benign confidence (0.09)"
+        ],
+        "ai_analysis": "AI skipped (ML confident).",
+        "payload": "http://secure-paypal-login.com/verify",
+        "evidence_img": null,
+        "ml_result": {
+            "phishing_probability": 0.09466404191219807,
+            "threshold": 0.31,
+            "label": "benign",
+            "reasons": [
+                {
+                    "feature": "special_count",
+                    "impact": 3.100640927130952
+                },
+                {
+                    "feature": "keyword_hits",
+                    "impact": -2.9641292614690773
+                },
+                {
+                    "feature": "tld_len",
+                    "impact": -1.1856700388477308
+                },
+                {
+                    "feature": "dash_count",
+                    "impact": -0.8494355841547918
+                },
+                {
+                    "feature": "path_len",
+                    "impact": -0.32106077444800474
+                }
+            ]
+        },
+        "timestamp": "2026-02-26 23:36:17"
+    },
+    {
+        "category": "SAFE",
+        "risk_score": 5,
+        "findings": [
+            "Payload type: url",
+            "Allowlist: trusted/known domain detected (example.com)",
+            "ML: Gray-zone suspicious (0.32)"
+        ],
+        "ai_analysis": "**Summary:** The URL points to example.com, which is a reserved domain used for documentation and testing purposes. While the path includes keywords like 'login' and 'update' often found in phishing scenarios, the domain itself is not functional for hosting malicious content.\n\n**Suspicious signals:**\n- Use of unencrypted HTTP protocol.\n- Path contains keywords ('login', 'update') frequently associated with credential harvesting attempts.\n\n**Benign signals:**\n- The domain 'example.com' is a reserved top-level domain for documentation as per RFC 2606.\n- The domain cannot be used for actual phishing or malware delivery.\n\n**Recommendation:** Treat this as a placeholder or demonstration link. If this appeared in a live environment, ensure you are redirected to a legitimate, encrypted production domain before entering any credentials.",
+        "payload": "http://example.com/login/update",
+        "evidence_img": null,
+        "ml_result": {
+            "phishing_probability": 0.32444502691407845,
+            "threshold": 0.31,
+            "label": "phishing",
+            "reasons": [
+                {
+                    "feature": "special_count",
+                    "impact": 2.6576922232551015
+                },
+                {
+                    "feature": "keyword_hits",
+                    "impact": -1.4820646307345386
+                },
+                {
+                    "feature": "tld_len",
+                    "impact": -1.1856700388477308
+                },
+                {
+                    "feature": "path_len",
+                    "impact": -0.5962557239748659
+                },
+                {
+                    "feature": "host_len",
+                    "impact": 0.07898006895176087
+                }
+            ]
+        },
+        "timestamp": "2026-02-26 23:36:15"
+    },
+    {
+        "category": "SAFE",
+        "risk_score": 5,
+        "findings": [
+            "Payload type: url",
+            "Allowlist: trusted/known domain detected (example.com)",
+            "ML: Gray-zone suspicious (p=0.32 >= t=0.31) -> needs AI confirmation"
+        ],
+        "ai_analysis": "**Summary:** The URL points to example.com, which is a reserved domain established by the IETF for documentation and illustrative purposes. While the path structure suggests a login or account update page, the domain cannot host functional malicious content or live services.\n\n**Suspicious signals:**\n- Use of unencrypted HTTP protocol\n- URL path includes sensitive keywords ('login', 'update') often associated with credential harvesting\n\n**Benign signals:**\n- The domain 'example.com' is a globally recognized placeholder domain for documentation (RFC 2606)\n- The domain is not a functional website for processing user data\n\n**Recommendation:** Recognize this as a documentation or test URL. No action is required as the domain is non-functional for real-world transactions.",
+        "payload": "http://example.com/login/update",
+        "evidence_img": "/static/uploads/evidence_20260226_232944.png",
+        "ml_result": {
+            "phishing_probability": 0.32444502691407845,
+            "threshold": 0.31,
+            "label": "phishing",
+            "reasons": [
+                {
+                    "feature": "special_count",
+                    "impact": 2.6576922232551015
+                },
+                {
+                    "feature": "keyword_hits",
+                    "impact": -1.4820646307345386
+                },
+                {
+                    "feature": "tld_len",
+                    "impact": -1.1856700388477308
+                },
+                {
+                    "feature": "path_len",
+                    "impact": -0.5962557239748659
+                },
+                {
+                    "feature": "host_len",
+                    "impact": 0.07898006895176087
+                }
+            ]
+        },
+        "timestamp": "2026-02-26 23:29:54"
+    },
+    {
+        "category": "SUSPICIOUS",
+        "risk_score": 35,
+        "findings": [
+            "Payload type: wifi",
+            "Weak Encryption (WEP) - Easily Hacked."
+        ],
+        "ai_analysis": "**Summary:** This QR code contains configuration details for a Wi-Fi network with the SSID 'FreeWifi'. It utilizes the legacy WEP encryption protocol and indicates the network is hidden.\n\n**Suspicious signals:**\n- Uses WEP (Wired Equivalent Privacy), a deprecated encryption standard that is highly vulnerable to modern decryption attacks.\n- The SSID 'FreeWifi' is generic and frequently associated with honeypots or rogue access points.\n- The password '12345678' is a common, weak credential that is easily guessed or brute-forced.\n- Hidden SSIDs are not a security feature and may cause client devices to leak the network name while searching for it.\n\n**Benign signals:**\n- The payload adheres to the standard 'WIFI:' URI syntax used for automated network configuration.\n- There are no embedded URLs, phishing links, or executable scripts.\n\n**Recommendation:** Avoid connecting to this network as WEP provides inadequate security for data protection. If you are the administrator, upgrade the security protocol to WPA2 or WPA3 and implement a more complex password.",
+        "payload": "WIFI:T:WEP;S:FreeWifi;P:12345678;H:true;;",
+        "evidence_img": null,
+        "ml_result": null,
+        "timestamp": "2026-02-26 23:25:26"
+    },
+    {
+        "category": "SAFE",
+        "risk_score": 5,
+        "findings": [
+            "Payload type: url",
+            "Allowlist: trusted/known domain detected (example.com)",
+            "ML: Gray-zone suspicious (p=0.32 >= t=0.31) -> needs AI confirmation"
+        ],
+        "ai_analysis": "**Summary:** The URL points to 'example.com', which is a reserved domain designated by IETF standards for use in documentation and examples. While the path suggests a login or update action, the domain itself is non-functional for hosting external content.\n\n**Suspicious signals:**\n- Use of insecure HTTP protocol instead of HTTPS\n- The path '/login/update' uses keywords frequently targeted in credential harvesting simulations\n\n**Benign signals:**\n- Domain is a reserved placeholder (RFC 2606) for documentation and testing\n- The domain is not associated with any active malicious infrastructure\n\n**Recommendation:** Since this is a documentation domain, it is harmless. For actual websites, verify the domain name matches the intended service and ensure the connection is encrypted via HTTPS before entering any information.",
+        "payload": "http://example.com/login/update",
+        "evidence_img": "/static/uploads/evidence_20260226_232426.png",
+        "ml_result": {
+            "phishing_probability": 0.32444502691407845,
+            "threshold": 0.31,
+            "label": "phishing",
+            "reasons": [
+                {
+                    "feature": "special_count",
+                    "impact": 2.6576922232551015
+                },
+                {
+                    "feature": "keyword_hits",
+                    "impact": -1.4820646307345386
+                },
+                {
+                    "feature": "tld_len",
+                    "impact": -1.1856700388477308
+                },
+                {
+                    "feature": "path_len",
+                    "impact": -0.5962557239748659
+                },
+                {
+                    "feature": "host_len",
+                    "impact": 0.07898006895176087
+                }
+            ]
+        },
+        "timestamp": "2026-02-26 23:24:41"
+    },
+    {
+        "category": "SUSPICIOUS",
+        "risk_score": 35,
+        "findings": [
+            "Payload type: wifi",
+            "Weak Encryption (WEP) - Easily Hacked."
+        ],
+        "ai_analysis": "### Security Analysis: QR Wi-Fi Payload\n\n**Payload:** `WIFI:T:WEP;S:FreeWifi;P:12345678;H:true;;`\n\n---\n\n#### 1. Attack Vectors\n*   **Evil Twin / Rogue AP:** The generic SSID `FreeWifi` is a prime candidate for an \"Evil Twin\" attack where an attacker mimics this network to perform Man-in-the-Middle (MITM) interceptions.\n*   **WEP Cracking:** The payload specifies **WEP** (Wired Equivalent Privacy). WEP is cryptographically broken and can be cracked in minutes using standard tools (e.g., Aircrack-ng).\n*   **Brute-Force:** The password `12345678` is a top-tier common password, vulnerable to instant dictionary attacks.\n\n#### 2. Identified Risks\n*   **Critical Protocol Vulnerability:** WEP is deprecated and insecure. It provides virtually no protection against modern threats.\n*   **Privacy Leakage (Hidden SSID):** Setting `H:true` (Hidden) forces client devices to broadcast \"probes\" for this network wherever they go. This allows attackers to track the user\u2019s movement and identifies the user's home/work network history.\n*   **Data Interception:** Because the encryption is weak, any data transmitted over this connection (HTTP traffic, DNS queries) is easily sniffable by nearby actors.\n\n#### 3. Obfuscation\n*   **None:** The payload follows the standard MECARD/Wi-Fi format with no encoding (Base64), character substitution, or padding used to hide its intent.\n\n---\n\n### **Verdict: HIGH RISK / INSECURE**\nThe payload describes a network with obsolete security, a trivial password, and a configuration that compromises user privacy. It is likely either an **intentionally weak \"honeypot\"** designed to capture traffic or a poorly configured legacy system. **Do not connect.**",
+        "payload": "WIFI:T:WEP;S:FreeWifi;P:12345678;H:true;;",
+        "evidence_img": null,
+        "ml_result": null,
+        "timestamp": "2026-02-26 23:10:20"
+    },
+    {
+        "category": "SAFE",
+        "risk_score": 25,
+        "findings": [
+            "Payload type: url",
+            "ML: Gray-zone suspicious (p=0.32 >= t=0.31) -> needs AI confirmation"
+        ],
+        "ai_analysis": "### **Security Analysis: QR Payload**\n\n**Payload:** `http://example.com/login/update`\n\n---\n\n#### **1. Identified Attacks**\n*   **Quishing (QR Phishing):** The use of a QR code to deliver a URL is a classic social engineering tactic to bypass email filters and security gateways.\n*   **Credential Harvesting:** The path `/login/update` is a high-signal indicator of a phishing page designed to steal usernames and passwords.\n\n#### **2. Risks**\n*   **Insecure Protocol (Cleartext):** The use of `http://` instead of `https://` means any data entered (credentials, PII) is transmitted in plaintext, vulnerable to **Man-in-the-Middle (MitM)** sniffing.\n*   **Account Takeover (ATO):** Success leads to unauthorized access to the user's account.\n*   **Placeholder Domain:** While `example.com` is a reserved documentation domain, in a live environment, this would represent a **Typosquatted** or **Look-alike domain** designed to mimic a legitimate service.\n\n#### **3. Obfuscation**\n*   **None (Direct):** The payload itself is not obfuscated (no Base64, URL encoding, or shorteners). \n*   **QR-Level Obfuscation:** The \"obfuscation\" lies in the medium; humans cannot parse the destination URL visually, relying entirely on the scanner's preview, which users often ignore.\n\n---\n\n### **Verdict: MALICIOUS / HIGH RISK**\n**Reasoning:** The combination of an insecure protocol (HTTP) and an urgent-action path (`/login/update`) is a definitive signature of a credential harvesting attack. **Do not interact.**",
+        "payload": "http://example.com/login/update",
+        "evidence_img": "/static/uploads/evidence_20260226_230944.png",
+        "ml_result": {
+            "phishing_probability": 0.32444502691407845,
+            "threshold": 0.31,
+            "label": "phishing",
+            "reasons": [
+                {
+                    "feature": "special_count",
+                    "impact": 2.6576922232551015
+                },
+                {
+                    "feature": "keyword_hits",
+                    "impact": -1.4820646307345386
+                },
+                {
+                    "feature": "tld_len",
+                    "impact": -1.1856700388477308
+                },
+                {
+                    "feature": "path_len",
+                    "impact": -0.5962557239748659
+                },
+                {
+                    "feature": "host_len",
+                    "impact": 0.07898006895176087
+                }
+            ]
+        },
+        "timestamp": "2026-02-26 23:09:58"
+    },
+    {
         "category": "SAFE",
         "risk_score": 0,
         "findings": [],

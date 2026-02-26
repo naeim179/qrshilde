@@ -1,110 +1,188 @@
 import os
+import json
 from pathlib import Path
 from dotenv import load_dotenv
-import google.generativeai as genai
 from groq import Groq
 
-# 📌 تحديد مسار الروت وتحميل المتغيرات
+# ✅ New SDK
+from google import genai
+
 ROOT_DIR = Path(__file__).resolve().parents[3]
 ENV_PATH = ROOT_DIR / ".env"
 load_dotenv(dotenv_path=ENV_PATH)
 
+
 def ai_enabled() -> bool:
-    """
-    Returns True if AT LEAST one API key is available.
-    """
-    has_gemini = os.getenv("GEMINI_API_KEY") is not None
-    has_groq = os.getenv("GROQ_API_KEY") is not None
+    has_gemini = bool(os.getenv("GEMINI_API_KEY"))
+    has_groq = bool(os.getenv("GROQ_API_KEY"))
     return has_gemini or has_groq
 
-def ask_gemini(prompt: str) -> str | None:
+
+def _build_json_prompt(payload: str) -> str:
     """
-    محاولة الاتصال بموديل Gemini
+    Force the LLM to return STRICT JSON and NOT override the app verdict.
     """
+    return f"""
+You are assisting a QR security scanner.
+STRICT RULES:
+- Do NOT output a final verdict label like SAFE/MALICIOUS/HIGH RISK.
+- Do NOT exaggerate. Be evidence-based.
+- If domain is a reserved placeholder like example.com, mention it is a documentation domain and reduce alarm.
+- Output MUST be valid JSON only (no markdown, no extra text).
+
+Return JSON with exactly these keys:
+summary: string
+suspicious_signals: array of strings
+benign_signals: array of strings
+recommendation: string
+
+Payload:
+{payload}
+""".strip()
+
+
+def _safe_parse_json(text: str):
+    """
+    Tries to parse JSON from model output. If fails, wraps raw text.
+    """
+    if not text:
+        return None
+
+    t = text.strip()
+
+    # First try: direct JSON
+    try:
+        return json.loads(t)
+    except Exception:
+        pass
+
+    # Second try: extract JSON block if model added text
+    start = t.find("{")
+    end = t.rfind("}")
+    if start != -1 and end != -1 and end > start:
+        candidate = t[start : end + 1].strip()
+        try:
+            return json.loads(candidate)
+        except Exception:
+            pass
+
+    # Fallback: wrap raw output
+    return {
+        "summary": t[:500],
+        "suspicious_signals": [],
+        "benign_signals": [],
+        "recommendation": "Review manually (AI output was not valid JSON)."
+    }
+
+
+def ask_gemini(payload: str) -> dict | None:
     api_key = os.getenv("GEMINI_API_KEY")
     if not api_key:
-        return None  # المفتاح غير موجود، ننتقل للتالي
+        return None
 
     try:
-        genai.configure(api_key=api_key)
-        
-        # ✅ التعديل هنا: استخدام الموديل العام والمستقر للباقة المجانية
-        model = genai.GenerativeModel('gemini-flash-latest')
-        
-        # دمج تعليمات النظام مع البرومبت
-        full_prompt = (
-            "You are a cybersecurity expert analyzing a QR payload. "
-            "Identify attacks, risks, and obfuscation. Be concise.\n"
-            f"Payload to analyze: {prompt}"
+        client = genai.Client(api_key=api_key)
+        full_prompt = _build_json_prompt(payload)
+
+        resp = client.models.generate_content(
+            model="gemini-3-flash-preview",
+            contents=full_prompt,
         )
-        
-        response = model.generate_content(full_prompt)
-        return response.text
+
+        data = _safe_parse_json(getattr(resp, "text", None))
+        return data
     except Exception as e:
         print(f"[⚠️] Gemini Error: {e}")
-        return None # فشل الاتصال، نرجع None عشان نجرب Groq
+        return None
 
-def ask_groq(prompt: str) -> str | None:
-    """
-    محاولة الاتصال بموديل Groq (احتياطي)
-    """
+
+def ask_groq(payload: str) -> dict | None:
     api_key = os.getenv("GROQ_API_KEY")
     if not api_key:
         return None
 
     try:
         client = Groq(api_key=api_key)
+
+        system_msg = (
+            "You are assisting a QR security scanner. "
+            "Return STRICT JSON only with keys: summary, suspicious_signals, benign_signals, recommendation. "
+            "Do NOT output final verdict labels SAFE/MALICIOUS. Evidence-based only."
+        )
+
+        user_msg = _build_json_prompt(payload)
+
         resp = client.chat.completions.create(
             model="llama-3.1-8b-instant",
             messages=[
-                {
-                    "role": "system",
-                    "content": "You are a cybersecurity expert. Analyze this QR payload concisely."
-                },
-                {"role": "user", "content": prompt},
+                {"role": "system", "content": system_msg},
+                {"role": "user", "content": user_msg},
             ],
             temperature=0.2,
         )
-        return resp.choices[0].message.content
+
+        text = resp.choices[0].message.content
+        return _safe_parse_json(text)
+
     except Exception as e:
         print(f"[⚠️] Groq Error: {e}")
         return None
 
-def ask_model(prompt: str) -> str | None:
+
+def ask_model(payload: str) -> dict | None:
     """
-    الدالة الرئيسية الذكية:
-    1. تحاول Gemini أولاً.
-    2. إذا فشل، تحاول Groq.
-    3. إذا فشل الاثنان، تعتذر.
+    Returns a dict JSON:
+    {summary, suspicious_signals, benign_signals, recommendation}
     """
-    # 1️⃣ المحاولة الأولى: Google Gemini
     print("   [..] Trying Google Gemini...")
-    result = ask_gemini(prompt)
+    result = ask_gemini(payload)
     if result:
         return result
 
-    # 2️⃣ المحاولة الثانية: Groq (Fallback)
     print("   [..] Gemini unavailable, switching to Groq...")
-    result = ask_groq(prompt)
+    result = ask_groq(payload)
     if result:
         return result
 
-    # 3️⃣ الكل فشل
     print("[!] All AI models failed or keys are missing.")
     return None
 
+
+def format_ai_analysis(ai_json: dict | None) -> str:
+    """
+    Convert AI JSON into a readable markdown-ish text for your report/dashboard.
+    """
+    if not ai_json:
+        return "AI Analysis unavailable."
+
+    summary = ai_json.get("summary", "")
+    sus = ai_json.get("suspicious_signals", []) or []
+    ben = ai_json.get("benign_signals", []) or []
+    rec = ai_json.get("recommendation", "")
+
+    out = []
+    if summary:
+        out.append(f"**Summary:** {summary}")
+
+    if sus:
+        out.append("\n**Suspicious signals:**")
+        out.extend([f"- {x}" for x in sus[:10]])
+
+    if ben:
+        out.append("\n**Benign signals:**")
+        out.extend([f"- {x}" for x in ben[:10]])
+
+    if rec:
+        out.append(f"\n**Recommendation:** {rec}")
+
+    return "\n".join(out)
+
+
 def ask_model_safe(prompt):
     """
-    نسخة معدلة تقبل النصوص والصور (List of inputs)
+    Keeps compatibility: returns (ok, text)
     """
-    try:
-        model = genai.GenerativeModel('gemini-1.5-flash') # نستخدم موديل سريع وذكي
-        
-        # التأكد أن المدخلات قائمة (عشان لو أرسلنا نص + صورة)
-        if isinstance(prompt, str):
-            prompt = [prompt]
-            
-        response = model.generate_content(prompt)
-        return True, response.text
-    except Exception as e:
-        return False, str(e)
+    data = ask_model(str(prompt))
+    if not data:
+        return False, "AI Analysis unavailable."
+    return True, format_ai_analysis(data)

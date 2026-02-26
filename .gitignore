@@ -7,3 +7,18 @@ static/uploads/
 url_model.pkl
 url_model_meta.json
 demo_results.json
+
+# secrets / local env
+.env
+.env.*
+
+# datasets (can include secrets in URLs)
+data/
+*.csv
+
+# generated artifacts
+demo_results.json
+reports/
+static/uploads/
+qrshilde/src/ml/url_model.pkl
+qrshilde/src/ml/url_model_meta.json

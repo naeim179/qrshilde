@@ -11,12 +11,7 @@ SHORTENERS = {"bit.ly", "t.co", "tinyurl.com", "goo.gl", "is.gd", "buff.ly", "cu
 
 
 def _safe_urlparse(u: str):
-    """
-    Parse URL safely. If urlparse raises (e.g., invalid IPv6),
-    return None and let caller handle.
-    """
     try:
-        # add scheme if missing
         u2 = u if "://" in u else "http://" + u
         return urlparse(u2)
     except Exception:
@@ -26,7 +21,7 @@ def _safe_urlparse(u: str):
 def extract_url_features(u: str):
     """
     Returns: (features_list, feature_names_list)
-    Robust against weird/invalid URLs (including broken IPv6 in datasets).
+    Robust against weird/invalid URLs.
     """
     u = (u or "").strip()
 
@@ -52,7 +47,6 @@ def extract_url_features(u: str):
         "keyword_hits",
     ]
 
-    # defaults (in case parsing fails)
     url_len = len(u)
     host = ""
     path = ""
@@ -60,14 +54,12 @@ def extract_url_features(u: str):
 
     parsed = _safe_urlparse(u)
     if parsed:
-        host = parsed.netloc or ""
+        # ✅ IMPORTANT: hostname avoids userinfo/port pollution (netloc can include ":8080" etc.)
+        host = (parsed.hostname or "")
         path = parsed.path or ""
-        # tld: last part after dot
         if "." in host:
             tld = host.split(".")[-1]
     else:
-        # if invalid parse: still try a minimal host guess
-        # take part before first slash
         host_guess = u.split("/")[0]
         host = host_guess[:255]
         if "." in host:
@@ -89,18 +81,13 @@ def extract_url_features(u: str):
     amp_count = u.count("&")
     percent_count = u.count("%")
 
-    # naive ip-like detection (IPv4 or bracketed IPv6-ish)
     ip_like = 1 if re.search(r"\b\d{1,3}(\.\d{1,3}){3}\b", u) or ("[" in u and "]" in u and ":" in u) else 0
-
     ratio_digits = (digit_count / url_len) if url_len > 0 else 0.0
-
     has_https = 1 if u.lower().startswith("https://") else 0
 
-    # shortener detection (only if host available)
     host_lower = host.lower()
     has_shortener = 1 if host_lower in SHORTENERS else 0
 
-    # keyword hits
     u_lower = u.lower()
     keyword_hits = sum(1 for k in KEYWORDS if k in u_lower)
 

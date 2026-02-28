@@ -1,24 +1,22 @@
+# Virtual environment
 .venv/
+
+# Python cache
 __pycache__/
 *.pyc
-history.json
-reports/
-static/uploads/
-url_model.pkl
-url_model_meta.json
-demo_results.json
 
-# secrets / local env
+# Secrets / environment
 .env
 .env.*
 
-# datasets (can include secrets in URLs)
-data/
-*.csv
-
-# generated artifacts
-demo_results.json
+# Generated reports & artifacts
+history.json
 reports/
 static/uploads/
+demo_results.json
+
+# ML models (generated after training)
 qrshilde/src/ml/url_model.pkl
-qrshilde/src/ml/url_model_meta.json
+# Datasets (keep local)
+data/
+*.csv

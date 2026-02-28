@@ -1,5 +1,853 @@
 [
     {
+        "category": "MALICIOUS",
+        "risk_score": 100,
+        "findings": [
+            "Payload type: url",
+            "URL Heuristic: excessive dashes in domain",
+            "URL Heuristic: domain does not resolve (NXDOMAIN/DNS failure)",
+            "URL Heuristic: lure words detected (login/verify/secure/...)",
+            "ML: High malicious confidence (1.00)"
+        ],
+        "ai_analysis": "**Summary:** QR code points to a login page on a potentially unverified domain.\n\n**Suspicious signals:**\n- Unverified domain: my-test-domain-123456.com\n- Login page detected\n\n**Benign signals:**\n- HTTPS protocol used\n\n**Recommendation:** Verify the authenticity of the domain before proceeding.",
+        "payload": "https://my-test-domain-123456.com/login",
+        "evidence_img": null,
+        "ml_result": {
+            "phishing_probability": 0.9995664954185486,
+            "threshold": 0.5,
+            "label": "phishing",
+            "reasons": [
+                {
+                    "feature": "has_https",
+                    "impact": 0.24591602385044098
+                },
+                {
+                    "feature": "tld_len",
+                    "impact": 0.11193253844976425
+                },
+                {
+                    "feature": "dot_count",
+                    "impact": 0.1093318983912468
+                },
+                {
+                    "feature": "ip_like",
+                    "impact": 0.06917208433151245
+                },
+                {
+                    "feature": "path_len",
+                    "impact": 0.06347452849149704
+                }
+            ]
+        },
+        "timestamp": "2026-02-27 07:01:02",
+        "report_id": "20260227_070056"
+    },
+    {
+        "category": "SAFE",
+        "risk_score": 0,
+        "findings": [
+            "Payload type: text"
+        ],
+        "ai_analysis": "**Summary:** QR code payload contains plain text 'hello world'.\n\n**Benign signals:**\n- plain text\n\n**Recommendation:** No action required. The payload is a harmless greeting.",
+        "payload": "hello world",
+        "evidence_img": null,
+        "ml_result": null,
+        "timestamp": "2026-02-27 07:00:17",
+        "report_id": "20260227_070014"
+    },
+    {
+        "category": "SAFE",
+        "risk_score": 5,
+        "findings": [
+            "Payload type: url",
+            "Reserved domain detected (example.net)",
+            "ML (advisory): p=1.00 (domain is allowlisted/reserved)"
+        ],
+        "ai_analysis": "AI disabled (set GEMINI_API_KEY or GROQ_API_KEY to enable).",
+        "payload": "https://example.net/test",
+        "evidence_img": null,
+        "ml_result": {
+            "phishing_probability": 0.9998138546943665,
+            "threshold": 0.5,
+            "label": "phishing",
+            "reasons": [
+                {
+                    "feature": "has_https",
+                    "impact": 0.24591602385044098
+                },
+                {
+                    "feature": "tld_len",
+                    "impact": 0.11193253844976425
+                },
+                {
+                    "feature": "dot_count",
+                    "impact": 0.1093318983912468
+                },
+                {
+                    "feature": "ip_like",
+                    "impact": 0.06917208433151245
+                },
+                {
+                    "feature": "path_len",
+                    "impact": 0.06347452849149704
+                }
+            ]
+        },
+        "timestamp": "2026-02-27 06:45:48",
+        "report_id": "20260227_064544"
+    },
+    {
+        "category": "SUSPICIOUS",
+        "risk_score": 45,
+        "findings": [
+            "Payload type: url",
+            "URL Heuristic: shortener detected (bit.ly)",
+            "ML: suspicious (shortener context, p=1.00)"
+        ],
+        "ai_analysis": "AI disabled (set AI_ENABLED=1 to enable).",
+        "payload": "https://bit.ly/3Xh92kP",
+        "evidence_img": null,
+        "ml_result": {
+            "phishing_probability": 0.9998999834060669,
+            "threshold": 0.5,
+            "label": "phishing",
+            "reasons": [
+                {
+                    "feature": "has_https",
+                    "impact": 0.24591602385044098
+                },
+                {
+                    "feature": "tld_len",
+                    "impact": 0.11193253844976425
+                },
+                {
+                    "feature": "dot_count",
+                    "impact": 0.1093318983912468
+                },
+                {
+                    "feature": "ip_like",
+                    "impact": 0.06917208433151245
+                },
+                {
+                    "feature": "path_len",
+                    "impact": 0.06347452849149704
+                }
+            ]
+        },
+        "timestamp": "2026-02-27 06:21:21",
+        "report_id": "20260227_062119"
+    },
+    {
+        "category": "MALICIOUS",
+        "risk_score": 80,
+        "findings": [
+            "Payload type: url",
+            "URL Heuristic: shortener detected (bit.ly)",
+            "ML: High malicious confidence (1.00)"
+        ],
+        "ai_analysis": "AI disabled (set AI_ENABLED=1 to enable).",
+        "payload": "https://bit.ly/3Xh92kP",
+        "evidence_img": null,
+        "ml_result": {
+            "phishing_probability": 0.9998999834060669,
+            "threshold": 0.5,
+            "label": "phishing",
+            "reasons": [
+                {
+                    "feature": "has_https",
+                    "impact": 0.24591602385044098
+                },
+                {
+                    "feature": "tld_len",
+                    "impact": 0.11193253844976425
+                },
+                {
+                    "feature": "dot_count",
+                    "impact": 0.1093318983912468
+                },
+                {
+                    "feature": "ip_like",
+                    "impact": 0.06917208433151245
+                },
+                {
+                    "feature": "path_len",
+                    "impact": 0.06347452849149704
+                }
+            ]
+        },
+        "timestamp": "2026-02-27 06:16:26",
+        "report_id": "20260227_061623"
+    },
+    {
+        "category": "SUSPICIOUS",
+        "risk_score": 40,
+        "findings": [
+            "Payload type: wifi",
+            "Weak Encryption (WEP) - Easily Hacked."
+        ],
+        "ai_analysis": "AI disabled (set AI_ENABLED=1 to enable).",
+        "payload": "WIFI:T:WEP;S:FreeAirportWifi;P:12345678;H:true;",
+        "evidence_img": null,
+        "ml_result": null,
+        "timestamp": "2026-02-27 06:09:54",
+        "report_id": "20260227_060954"
+    },
+    {
+        "category": "SUSPICIOUS",
+        "risk_score": 60,
+        "findings": [
+            "Payload type: url",
+            "Detected SQL Injection pattern: '(?i)UNION SELECT'",
+            "Reserved domain detected (example.com)",
+            "URL Heuristic: HTTP without TLS",
+            "URL Heuristic: lure words detected (login/verify/secure/...)",
+            "ML (advisory): p=0.90 (domain is allowlisted/reserved)"
+        ],
+        "ai_analysis": "AI disabled (set AI_ENABLED=1 to enable).",
+        "payload": "http://example.com/index.php?id=1 UNION SELECT password FROM users",
+        "evidence_img": null,
+        "ml_result": {
+            "phishing_probability": 0.9022478461265564,
+            "threshold": 0.5,
+            "label": "phishing",
+            "reasons": [
+                {
+                    "feature": "has_https",
+                    "impact": 0.24591602385044098
+                },
+                {
+                    "feature": "tld_len",
+                    "impact": 0.11193253844976425
+                },
+                {
+                    "feature": "dot_count",
+                    "impact": 0.1093318983912468
+                },
+                {
+                    "feature": "ip_like",
+                    "impact": 0.06917208433151245
+                },
+                {
+                    "feature": "path_len",
+                    "impact": 0.06347452849149704
+                }
+            ]
+        },
+        "timestamp": "2026-02-27 06:09:41",
+        "report_id": "20260227_060941"
+    },
+    {
+        "category": "MALICIOUS",
+        "risk_score": 100,
+        "findings": [
+            "Payload type: url",
+            "URL Heuristic: brand-in-domain impersonation (paypal)",
+            "URL Heuristic: excessive dashes in domain",
+            "URL Heuristic: domain does not resolve (NXDOMAIN/DNS failure)",
+            "URL Heuristic: HTTP without TLS",
+            "URL Heuristic: lure words detected (login/verify/secure/...)",
+            "ML: Gray-zone suspicious (p=0.82 >= t=0.50)"
+        ],
+        "ai_analysis": "AI disabled (set AI_ENABLED=1 to enable).",
+        "payload": "http://paypal-secure-login-verification.com/update",
+        "evidence_img": null,
+        "ml_result": {
+            "phishing_probability": 0.8229929208755493,
+            "threshold": 0.5,
+            "label": "phishing",
+            "reasons": [
+                {
+                    "feature": "has_https",
+                    "impact": 0.24591602385044098
+                },
+                {
+                    "feature": "tld_len",
+                    "impact": 0.11193253844976425
+                },
+                {
+                    "feature": "dot_count",
+                    "impact": 0.1093318983912468
+                },
+                {
+                    "feature": "ip_like",
+                    "impact": 0.06917208433151245
+                },
+                {
+                    "feature": "path_len",
+                    "impact": 0.06347452849149704
+                }
+            ]
+        },
+        "timestamp": "2026-02-27 06:09:30",
+        "report_id": "20260227_060930"
+    },
+    {
+        "category": "SUSPICIOUS",
+        "risk_score": 55,
+        "findings": [
+            "Payload type: url",
+            "ML: High malicious confidence (1.00)"
+        ],
+        "ai_analysis": "AI disabled (set AI_ENABLED=1 to enable).",
+        "payload": "https://bit.ly/3Xh92kP",
+        "evidence_img": null,
+        "ml_result": {
+            "phishing_probability": 0.9998999834060669,
+            "threshold": 0.5,
+            "label": "phishing",
+            "reasons": [
+                {
+                    "feature": "has_https",
+                    "impact": 0.24591602385044098
+                },
+                {
+                    "feature": "tld_len",
+                    "impact": 0.11193253844976425
+                },
+                {
+                    "feature": "dot_count",
+                    "impact": 0.1093318983912468
+                },
+                {
+                    "feature": "ip_like",
+                    "impact": 0.06917208433151245
+                },
+                {
+                    "feature": "path_len",
+                    "impact": 0.06347452849149704
+                }
+            ]
+        },
+        "timestamp": "2026-02-27 06:09:22",
+        "report_id": "20260227_060922"
+    },
+    {
+        "category": "SAFE",
+        "risk_score": 5,
+        "findings": [
+            "Payload type: url",
+            "Allowlist: trusted/known domain detected (google.com)",
+            "ML (advisory): p=1.00 (domain is allowlisted/reserved)"
+        ],
+        "ai_analysis": "AI disabled (set AI_ENABLED=1 to enable).",
+        "payload": "https://www.google.com",
+        "evidence_img": null,
+        "ml_result": {
+            "phishing_probability": 0.9998983144760132,
+            "threshold": 0.5,
+            "label": "phishing",
+            "reasons": [
+                {
+                    "feature": "has_https",
+                    "impact": 0.24591602385044098
+                },
+                {
+                    "feature": "tld_len",
+                    "impact": 0.11193253844976425
+                },
+                {
+                    "feature": "dot_count",
+                    "impact": 0.1093318983912468
+                },
+                {
+                    "feature": "ip_like",
+                    "impact": 0.06917208433151245
+                },
+                {
+                    "feature": "path_len",
+                    "impact": 0.06347452849149704
+                }
+            ]
+        },
+        "timestamp": "2026-02-27 06:07:05",
+        "report_id": "20260227_060702"
+    },
+    {
+        "category": "SUSPICIOUS",
+        "risk_score": 40,
+        "findings": [
+            "Payload type: wifi",
+            "Weak Encryption (WEP) - Easily Hacked."
+        ],
+        "ai_analysis": "**Summary:** QR code contains a WIFI payload with WEP encryption, a common but outdated security protocol.\n\n**Suspicious signals:**\n- WEP encryption used\n- Password is hardcoded (12345678)\n- No encryption method specified (T)\n\n**Benign signals:**\n- FreeAirportWifi is a common network name\n- Network is hidden (H=true)\n\n**Recommendation:** Use a secure network or verify the network's authenticity before connecting.",
+        "payload": "WIFI:T:WEP;S:FreeAirportWifi;P:12345678;H:true;",
+        "evidence_img": null,
+        "ml_result": null,
+        "timestamp": "2026-02-27 05:56:27",
+        "report_id": "20260227_055626"
+    },
+    {
+        "category": "SUSPICIOUS",
+        "risk_score": 60,
+        "findings": [
+            "Payload type: url",
+            "Detected SQL Injection pattern: '(?i)UNION SELECT'",
+            "Reserved domain detected (example.com)",
+            "URL Heuristic: HTTP without TLS",
+            "URL Heuristic: lure words detected (login/verify/secure/...)",
+            "ML (advisory): p=0.90 (domain is allowlisted/reserved)"
+        ],
+        "ai_analysis": "**Summary:** Potential SQL injection attempt detected in the URL query parameter.\n\n**Suspicious signals:**\n- SQL injection attempt\n-  UNION SELECT statement\n- Potential password exposure\n\n**Benign signals:**\n- Documentation domain (example.com)\n\n**Recommendation:** Scan the URL with a SQL injection scanner to confirm the vulnerability and consider using parameterized queries or prepared statements to prevent similar attacks.",
+        "payload": "http://example.com/index.php?id=1 UNION SELECT password FROM users",
+        "evidence_img": null,
+        "ml_result": {
+            "phishing_probability": 0.9022478461265564,
+            "threshold": 0.5,
+            "label": "phishing",
+            "reasons": [
+                {
+                    "feature": "has_https",
+                    "impact": 0.24591602385044098
+                },
+                {
+                    "feature": "tld_len",
+                    "impact": 0.11193253844976425
+                },
+                {
+                    "feature": "dot_count",
+                    "impact": 0.1093318983912468
+                },
+                {
+                    "feature": "ip_like",
+                    "impact": 0.06917208433151245
+                },
+                {
+                    "feature": "path_len",
+                    "impact": 0.06347452849149704
+                }
+            ]
+        },
+        "timestamp": "2026-02-27 05:56:18",
+        "report_id": "20260227_055617"
+    },
+    {
+        "category": "SUSPICIOUS",
+        "risk_score": 55,
+        "findings": [
+            "Payload type: url",
+            "ML: High malicious confidence (1.00)"
+        ],
+        "ai_analysis": "**Summary:** QR code contains a shortened URL pointing to a Bit.ly link.\n\n**Suspicious signals:**\n- Shortened URL\n- Redirect potential\n\n**Benign signals:**\n- Bit.ly is a legitimate URL shortening service\n\n**Recommendation:** Verify the authenticity of the link before proceeding, as shortened URLs can be used for phishing or malware distribution.",
+        "payload": "https://bit.ly/3Xh92kP",
+        "evidence_img": "/static/uploads/evidence_20260227_055602.png",
+        "ml_result": {
+            "phishing_probability": 0.9998999834060669,
+            "threshold": 0.5,
+            "label": "phishing",
+            "reasons": [
+                {
+                    "feature": "has_https",
+                    "impact": 0.24591602385044098
+                },
+                {
+                    "feature": "tld_len",
+                    "impact": 0.11193253844976425
+                },
+                {
+                    "feature": "dot_count",
+                    "impact": 0.1093318983912468
+                },
+                {
+                    "feature": "ip_like",
+                    "impact": 0.06917208433151245
+                },
+                {
+                    "feature": "path_len",
+                    "impact": 0.06347452849149704
+                }
+            ]
+        },
+        "timestamp": "2026-02-27 05:56:05",
+        "report_id": "20260227_055602"
+    },
+    {
+        "category": "MALICIOUS",
+        "risk_score": 100,
+        "findings": [
+            "Payload type: url",
+            "URL Heuristic: brand-in-domain impersonation (paypal)",
+            "URL Heuristic: excessive dashes in domain",
+            "URL Heuristic: domain does not resolve (NXDOMAIN/DNS failure)",
+            "URL Heuristic: HTTP without TLS",
+            "URL Heuristic: lure words detected (login/verify/secure/...)",
+            "ML: Gray-zone suspicious (p=0.82 >= t=0.50)"
+        ],
+        "ai_analysis": "**Summary:** QR code payload analysis for http://paypal-secure-login-verification.com/update\n\n**Suspicious signals:**\n- paypal-secure-login-verification.com is a potentially suspicious domain name, as it contains 'secure-login-verification' which is a common phishing tactic\n- The URL path '/update' is a generic and common path used by attackers for malicious updates\n\n**Benign signals:**\n- The domain paypal-secure-login-verification.com is not a reserved documentation domain, but it is not a clear indicator of malicious activity either\n\n**Recommendation:** Exercise caution and verify the authenticity of the QR code before proceeding",
+        "payload": "http://paypal-secure-login-verification.com/update",
+        "evidence_img": null,
+        "ml_result": {
+            "phishing_probability": 0.8229929208755493,
+            "threshold": 0.5,
+            "label": "phishing",
+            "reasons": [
+                {
+                    "feature": "has_https",
+                    "impact": 0.24591602385044098
+                },
+                {
+                    "feature": "tld_len",
+                    "impact": 0.11193253844976425
+                },
+                {
+                    "feature": "dot_count",
+                    "impact": 0.1093318983912468
+                },
+                {
+                    "feature": "ip_like",
+                    "impact": 0.06917208433151245
+                },
+                {
+                    "feature": "path_len",
+                    "impact": 0.06347452849149704
+                }
+            ]
+        },
+        "timestamp": "2026-02-27 05:55:47",
+        "report_id": "20260227_055546"
+    },
+    {
+        "category": "SUSPICIOUS",
+        "risk_score": 55,
+        "findings": [
+            "Payload type: url",
+            "ML: High malicious confidence (1.00)"
+        ],
+        "ai_analysis": "**Summary:** QR code points to a well-known documentation domain.\n\n**Benign signals:**\n- Domain is a well-known documentation domain (google.com)\n- No red flags in the domain name\n\n**Recommendation:** Proceed with caution and verify the context of the QR code.",
+        "payload": "https://www.google.com",
+        "evidence_img": "/static/uploads/evidence_20260227_055524.png",
+        "ml_result": {
+            "phishing_probability": 0.9998983144760132,
+            "threshold": 0.5,
+            "label": "phishing",
+            "reasons": [
+                {
+                    "feature": "has_https",
+                    "impact": 0.24591602385044098
+                },
+                {
+                    "feature": "tld_len",
+                    "impact": 0.11193253844976425
+                },
+                {
+                    "feature": "dot_count",
+                    "impact": 0.1093318983912468
+                },
+                {
+                    "feature": "ip_like",
+                    "impact": 0.06917208433151245
+                },
+                {
+                    "feature": "path_len",
+                    "impact": 0.06347452849149704
+                }
+            ]
+        },
+        "timestamp": "2026-02-27 05:55:34",
+        "report_id": "20260227_055524"
+    },
+    {
+        "category": "MALICIOUS",
+        "risk_score": 85,
+        "findings": [
+            "Payload type: vcard",
+            "VCARD QR: Can import contact data\u2014may hide malicious URLs in fields.",
+            "VCARD contains URL fields\u2014verify before opening embedded links.",
+            "VCARD: embedded URL extracted for analysis.",
+            "URL Heuristic: brand-in-domain impersonation (paypal)",
+            "URL Heuristic: excessive dashes in domain",
+            "URL Heuristic: HTTP without TLS",
+            "URL Heuristic: lure words detected (login/verify/secure/...)"
+        ],
+        "ai_analysis": {
+            "summary": "QR payload contains a vCard with a URL pointing to a PayPal login verification page.",
+            "suspicious_signals": [
+                "URL contains a potential phishing domain (http://secure-paypal-login.com/verify)"
+            ],
+            "benign_signals": [
+                "vCard version is 3.0, which is a valid version",
+                "vCard contains a valid name (Support Team)"
+            ],
+            "recommendation": "Verify the authenticity of the URL before proceeding"
+        },
+        "payload": "BEGIN:VCARD\nVERSION:3.0\nFN:Support Team\nURL:http://secure-paypal-login.com/verify\nEND:VCARD",
+        "evidence_img": null,
+        "ml_result": null,
+        "timestamp": "2026-02-27 04:50:10",
+        "report_id": "20260227_045008"
+    },
+    {
+        "category": "MALICIOUS",
+        "risk_score": 85,
+        "findings": [
+            "Payload type: vcard",
+            "VCARD QR: Can import contact data\u2014may hide malicious URLs in fields.",
+            "VCARD contains URL fields\u2014verify before opening embedded links.",
+            "VCARD: embedded URL extracted for analysis.",
+            "URL Heuristic: brand-in-domain impersonation (paypal)",
+            "URL Heuristic: excessive dashes in domain",
+            "URL Heuristic: HTTP without TLS",
+            "URL Heuristic: lure words detected (login/verify/secure/...)"
+        ],
+        "ai_analysis": {
+            "summary": "QR payload contains a vCard with a URL pointing to a PayPal login verification page.",
+            "suspicious_signals": [
+                "URL contains a potential phishing domain (http://secure-paypal-login.com/verify)"
+            ],
+            "benign_signals": [
+                "vCard format is standard (BEGIN:VCARD, VERSION:3.0, FN:Support Team, END:VCARD)"
+            ],
+            "recommendation": "Verify the authenticity of the URL before proceeding."
+        },
+        "payload": "BEGIN:VCARD\nVERSION:3.0\nFN:Support Team\nURL:http://secure-paypal-login.com/verify\nEND:VCARD",
+        "evidence_img": null,
+        "ml_result": null,
+        "timestamp": "2026-02-27 04:49:47",
+        "report_id": "20260227_044944"
+    },
+    {
+        "category": "SUSPICIOUS",
+        "risk_score": 40,
+        "findings": [
+            "Payload type: wifi",
+            "Weak Encryption (WEP) - Easily Hacked."
+        ],
+        "ai_analysis": {
+            "summary": "QR code payload analysis",
+            "suspicious_signals": [
+                "WEP encryption is insecure and vulnerable to brute-force attacks",
+                "Password '12345678' is a common and easily guessable password",
+                "Presence of a hidden SSID (H:true) may indicate a security risk"
+            ],
+            "benign_signals": [
+                "Free public Wi-Fi is commonly offered in public places"
+            ],
+            "recommendation": "Exercise caution when connecting to public Wi-Fi networks and consider using a VPN"
+        },
+        "payload": "WIFI:T:WEP;S:FreeWifi;P:12345678;H:true;;",
+        "evidence_img": null,
+        "ml_result": null,
+        "timestamp": "2026-02-27 04:49:16",
+        "report_id": "20260227_044914"
+    },
+    {
+        "category": "SUSPICIOUS",
+        "risk_score": 65,
+        "findings": [
+            "Payload type: url",
+            "URL Heuristic: brand-in-domain impersonation (paypal)",
+            "URL Heuristic: excessive dashes in domain",
+            "URL Heuristic: HTTP without TLS",
+            "URL Heuristic: lure words detected (login/verify/secure/...)",
+            "ML: High benign confidence (0.09)"
+        ],
+        "ai_analysis": {
+            "summary": "QR code payload analysis for http://secure-paypal-login.com/verify",
+            "suspicious_signals": [
+                "The domain 'secure-paypal-login.com' is similar to a legitimate PayPal domain, but not an exact match.",
+                "The URL path '/verify' is a common pattern used in phishing attacks."
+            ],
+            "benign_signals": [
+                "The domain 'secure-paypal-login.com' is not a reserved placeholder domain."
+            ],
+            "recommendation": "Exercise caution and verify the authenticity of the PayPal login page before proceeding."
+        },
+        "payload": "http://secure-paypal-login.com/verify",
+        "evidence_img": null,
+        "ml_result": {
+            "phishing_probability": 0.09466404191219807,
+            "threshold": 0.31,
+            "label": "benign",
+            "reasons": [
+                {
+                    "feature": "special_count",
+                    "impact": 3.100640927130952
+                },
+                {
+                    "feature": "keyword_hits",
+                    "impact": -2.9641292614690773
+                },
+                {
+                    "feature": "tld_len",
+                    "impact": -1.1856700388477308
+                },
+                {
+                    "feature": "dash_count",
+                    "impact": -0.8494355841547918
+                },
+                {
+                    "feature": "path_len",
+                    "impact": -0.32106077444800474
+                }
+            ]
+        },
+        "timestamp": "2026-02-27 04:48:38",
+        "report_id": "20260227_044835"
+    },
+    {
+        "category": "SAFE",
+        "risk_score": 25,
+        "findings": [
+            "Payload type: url",
+            "Reserved domain detected (example.com)",
+            "URL Heuristic: HTTP without TLS",
+            "URL Heuristic: lure words detected (login/verify/secure/...)",
+            "ML (advisory): p=0.32 (domain is allowlisted/reserved)"
+        ],
+        "ai_analysis": {
+            "summary": "The analyzed URL points to 'example.com', which is a reserved domain used for documentation and technical examples. The path indicates a simulated login update page.",
+            "suspicious_signals": [
+                "URL uses the insecure HTTP protocol instead of HTTPS",
+                "The path '/login/update' is characteristic of credential-phishing patterns"
+            ],
+            "benign_signals": [
+                "The domain 'example.com' is a reserved placeholder domain defined by IANA/RFC 2606 and is not a live functional site for data collection",
+                "No use of URL shorteners or character obfuscation"
+            ],
+            "recommendation": "Recognize this as a documentation or testing example. In a real-world scenario, ensure the domain is authentic and uses HTTPS before entering credentials."
+        },
+        "payload": "http://example.com/login/update",
+        "evidence_img": "/static/uploads/evidence_20260227_044758.png",
+        "ml_result": {
+            "phishing_probability": 0.32444502691407845,
+            "threshold": 0.31,
+            "label": "phishing",
+            "reasons": [
+                {
+                    "feature": "special_count",
+                    "impact": 2.6576922232551015
+                },
+                {
+                    "feature": "keyword_hits",
+                    "impact": -1.4820646307345386
+                },
+                {
+                    "feature": "tld_len",
+                    "impact": -1.1856700388477308
+                },
+                {
+                    "feature": "path_len",
+                    "impact": -0.5962557239748659
+                },
+                {
+                    "feature": "host_len",
+                    "impact": 0.07898006895176087
+                }
+            ]
+        },
+        "timestamp": "2026-02-27 04:48:07",
+        "report_id": "20260227_044758"
+    },
+    {
+        "category": "SUSPICIOUS",
+        "risk_score": 45,
+        "findings": [
+            "Payload type: sms",
+            "SMS QR: May trigger composing/sending an SMS (social engineering risk).",
+            "SMS Heuristic: smishing keywords detected (otp/bank/urgent/verify/...)"
+        ],
+        "ai_analysis": "AI Analysis unavailable.",
+        "payload": "SMSTO:+962799999999:URGENT verify your bank OTP now",
+        "evidence_img": null,
+        "ml_result": null,
+        "timestamp": "2026-02-27 02:20:30"
+    },
+    {
+        "category": "SUSPICIOUS",
+        "risk_score": 35,
+        "findings": [
+            "Payload type: wifi",
+            "Weak Encryption (WEP) - Easily Hacked."
+        ],
+        "ai_analysis": "AI Analysis unavailable.",
+        "payload": "WIFI:T:WEP;S:FreeWifi;P:12345678;H:true;;",
+        "evidence_img": null,
+        "ml_result": null,
+        "timestamp": "2026-02-27 02:19:57"
+    },
+    {
+        "category": "MALICIOUS",
+        "risk_score": 75,
+        "findings": [
+            "Payload type: url",
+            "URL Heuristic: brand-in-domain impersonation (paypal)",
+            "URL Heuristic: lure words detected (login/verify/secure/...)",
+            "URL Heuristic: HTTP without TLS",
+            "ML: High benign confidence (0.09)"
+        ],
+        "ai_analysis": "AI Analysis unavailable.",
+        "payload": "http://secure-paypal-login.com/verify",
+        "evidence_img": null,
+        "ml_result": {
+            "phishing_probability": 0.09466404191219807,
+            "threshold": 0.31,
+            "label": "benign",
+            "reasons": [
+                {
+                    "feature": "special_count",
+                    "impact": 3.100640927130952
+                },
+                {
+                    "feature": "keyword_hits",
+                    "impact": -2.9641292614690773
+                },
+                {
+                    "feature": "tld_len",
+                    "impact": -1.1856700388477308
+                },
+                {
+                    "feature": "dash_count",
+                    "impact": -0.8494355841547918
+                },
+                {
+                    "feature": "path_len",
+                    "impact": -0.32106077444800474
+                }
+            ]
+        },
+        "timestamp": "2026-02-27 02:19:05"
+    },
+    {
+        "category": "SAFE",
+        "risk_score": 15,
+        "findings": [
+            "Payload type: url",
+            "Allowlist: trusted/known domain detected (example.com)",
+            "URL Heuristic: HTTP without TLS",
+            "ML: Gray-zone suspicious (0.32)"
+        ],
+        "ai_analysis": "AI Analysis unavailable.",
+        "payload": "http://example.com/login/update",
+        "evidence_img": null,
+        "ml_result": {
+            "phishing_probability": 0.32444502691407845,
+            "threshold": 0.31,
+            "label": "phishing",
+            "reasons": [
+                {
+                    "feature": "special_count",
+                    "impact": 2.6576922232551015
+                },
+                {
+                    "feature": "keyword_hits",
+                    "impact": -1.4820646307345386
+                },
+                {
+                    "feature": "tld_len",
+                    "impact": -1.1856700388477308
+                },
+                {
+                    "feature": "path_len",
+                    "impact": -0.5962557239748659
+                },
+                {
+                    "feature": "host_len",
+                    "impact": 0.07898006895176087
+                }
+            ]
+        },
+        "timestamp": "2026-02-27 02:18:23"
+    },
+    {
         "category": "SUSPICIOUS",
         "risk_score": 45,
         "findings": [

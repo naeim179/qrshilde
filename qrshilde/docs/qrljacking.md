@@ -1,1 +1,0 @@
-# QRLjacking — Session Hijacking Attack

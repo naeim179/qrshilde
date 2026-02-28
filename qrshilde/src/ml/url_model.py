@@ -10,12 +10,10 @@ def model_exists() -> bool:
 
 
 def _load_model():
-    # model is stored directly (e.g., LogisticRegression)
     return joblib.load(MODEL_PATH)
 
 
 def get_threshold() -> float:
-    # default tuned threshold
     try:
         return float(os.getenv("URL_MAL_THRESHOLD", "0.31"))
     except Exception:
@@ -26,19 +24,30 @@ def predict_url(url: str) -> dict:
     model = _load_model()
     feats, names = extract_url_features(url)
 
-    p = float(model.predict_proba([feats])[0][1])
+    # predict probability
+    proba = model.predict_proba([feats])[0][1]
+    p = float(proba)
+
     threshold = get_threshold()
     label = "phishing" if p >= threshold else "benign"
 
-    # Explainability for linear models: coef * feature_value
+    # Explainability:
+    # - If linear model: coef * value
+    # - If tree/boosting: feature_importances_
     reasons = []
     try:
-        coefs = model.coef_[0]
-        impacts = []
-        for i, fname in enumerate(names):
-            impacts.append((fname, float(coefs[i] * feats[i])))
-        impacts.sort(key=lambda x: abs(x[1]), reverse=True)
-        reasons = [{"feature": f, "impact": v} for f, v in impacts[:5]]
+        if hasattr(model, "coef_"):
+            coefs = model.coef_[0]
+            impacts = []
+            for i, fname in enumerate(names):
+                impacts.append((fname, float(coefs[i] * feats[i])))
+            impacts.sort(key=lambda x: abs(x[1]), reverse=True)
+            reasons = [{"feature": f, "impact": v} for f, v in impacts[:5]]
+        elif hasattr(model, "feature_importances_"):
+            imps = list(getattr(model, "feature_importances_", []))
+            pairs = [(names[i], float(imps[i])) for i in range(min(len(names), len(imps)))]
+            pairs.sort(key=lambda x: x[1], reverse=True)
+            reasons = [{"feature": f, "impact": v} for f, v in pairs[:5]]
     except Exception:
         reasons = []
 

@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import datetime
 import os
 import re
@@ -13,11 +11,25 @@ from qrshilde.src.tools.payload_type import detect_payload_type
 from qrshilde.src.ml.url_model import predict_url, model_exists
 from qrshilde.src.ai.report_generator import build_markdown_report
 
+# -----------------------------
+# Config
+# -----------------------------
 DEFAULT_THRESHOLD = float(os.getenv("URL_MAL_THRESHOLD", "0.60"))
 
-ALLOWLIST_DOMAINS = {"google.com", "github.com", "microsoft.com", "paypal.com"}
+ALLOWLIST_DOMAINS = {
+    "google.com",
+    "github.com",
+    "microsoft.com",
+    "paypal.com",
+}
 
-RESERVED_DOMAINS = {"example.com", "example.net", "example.org", "localhost", "127.0.0.1"}
+RESERVED_DOMAINS = {
+    "example.com",
+    "example.net",
+    "example.org",
+    "localhost",
+    "127.0.0.1",
+}
 
 SHORTENERS = {
     "bit.ly", "t.co", "tinyurl.com", "goo.gl", "is.gd", "buff.ly", "cutt.ly",
@@ -31,7 +43,9 @@ LURE_WORDS = [
     "confirm", "billing", "invoice", "pay", "wallet", "support"
 ]
 
-
+# -----------------------------
+# Helpers
+# -----------------------------
 def _get_domain(url: str) -> str | None:
     try:
         u = (url or "").strip()
@@ -127,20 +141,22 @@ def _vcard_threats(payload: str) -> list[str]:
     return threats
 
 
-def _clamp(n: int, lo: int, hi: int) -> int:
-    return max(lo, min(hi, n))
-
-
-def _verdict_from_score(score: int) -> str:
+def _verdict_band(score: int) -> str:
     if score >= 80:
+        return "CRITICAL"
+    if score >= 60:
         return "HIGH"
-    if score >= 45:
+    if score >= 35:
         return "MEDIUM"
     return "LOW"
 
 
-async def analyze_qr_payload(payload: str, report_id: str):
+# -----------------------------
+# Main Analyzer (RULES + ML only)
+# -----------------------------
+async def analyze_qr_payload(payload: str, report_id: str | None = None) -> dict:
     payload = (payload or "").strip()
+
     findings: list[str] = []
     benign: list[str] = []
     risk_score = 0
@@ -169,8 +185,6 @@ async def analyze_qr_payload(payload: str, report_id: str):
         if wifi_issues:
             findings.extend(wifi_issues)
             risk_score += 40
-        else:
-            benign.append("Wi-Fi payload parsed with no strong threat flags.")
 
     elif ptype == "sms":
         sms_issues = _sms_threats(payload)
@@ -221,7 +235,7 @@ async def analyze_qr_payload(payload: str, report_id: str):
         if domain:
             if _domain_in_set(domain, ALLOWLIST_DOMAINS):
                 is_allowlisted = True
-                benign.append(f"Allowlist match: {domain}")
+                benign.append(f"Allowlist: trusted/known domain detected ({domain})")
 
             if _domain_in_set(domain, RESERVED_DOMAINS):
                 is_reserved = True
@@ -234,7 +248,7 @@ async def analyze_qr_payload(payload: str, report_id: str):
 
             for brand in BRANDS:
                 if brand in domain and not domain.endswith(f"{brand}.com"):
-                    findings.append(f"URL Heuristic: possible brand impersonation in domain ({brand})")
+                    findings.append(f"URL Heuristic: brand-in-domain impersonation ({brand})")
                     risk_score += 35
                     break
 
@@ -246,6 +260,8 @@ async def analyze_qr_payload(payload: str, report_id: str):
                 dns_ok = False
                 findings.append("URL Heuristic: domain does not resolve (NXDOMAIN/DNS failure)")
                 risk_score += 25
+            else:
+                benign.append("DNS resolves (basic check) or domain is allowlisted/reserved.")
 
         if _url_is_http(url_target):
             findings.append("URL Heuristic: HTTP without TLS")
@@ -254,13 +270,14 @@ async def analyze_qr_payload(payload: str, report_id: str):
             benign.append("HTTPS detected (or non-http scheme).")
 
         hits = _lure_hits(url_target)
-        if hits and not is_allowlisted and not is_reserved:
-            findings.append(f"URL Heuristic: lure keywords detected: {', '.join(hits[:8])}")
-            risk_score += 15
-        elif hits and (is_allowlisted or is_reserved):
-            benign.append("Lure-like words exist but domain is allowlisted/reserved (reduced concern).")
+        if hits:
+            if is_allowlisted or is_reserved:
+                benign.append("Lure-like words exist but domain is allowlisted/reserved (reduced concern).")
+            else:
+                findings.append(f"URL Heuristic: lure keywords present ({', '.join(hits[:6])})")
+                risk_score += 10
 
-    # 4) ML model (URL only)
+    # 4) ML model (URL only) — with safety override for allowlist/reserved
     ml_result = None
     if url_target and (ptype == "url" or ptype_for_url == "url") and model_exists():
         try:
@@ -268,38 +285,44 @@ async def analyze_qr_payload(payload: str, report_id: str):
             p = float(ml_result.get("phishing_probability", 0.0))
             thr = float(ml_result.get("threshold", DEFAULT_THRESHOLD))
 
-            if p >= thr:
-                findings.append(f"ML: suspicious probability={p:.2f} (>= {thr:.2f})")
-                risk_score += 35
+            if is_reserved:
+                benign.append(f"ML: probability={p:.2f} but domain is reserved; ML not used to escalate.")
+            elif is_allowlisted:
+                benign.append(f"ML: probability={p:.2f} but domain is allowlisted; ML not used to escalate.")
             else:
-                benign.append(f"ML: probability={p:.2f} (< {thr:.2f})")
-                risk_score -= 5
-
-            if is_shortener and p >= thr:
-                risk_score += 10
-
+                if p >= thr:
+                    findings.append(f"ML: suspicious probability={p:.2f} (>= {thr:.2f})")
+                    risk_score += 35
+                    if is_shortener:
+                        risk_score += 10
+                else:
+                    benign.append(f"ML: probability={p:.2f} (< {thr:.2f})")
         except Exception as e:
             findings.append(f"ML: model error: {e}")
     else:
         if url_target and (ptype == "url" or ptype_for_url == "url"):
             benign.append("ML model not found (url_model.pkl missing) — rules-only mode.")
 
-    # 5) Final normalize
-    risk_score = _clamp(risk_score, 0, 100)
+    # 5) Reserved domain cap (prevents example.com false alarms)
+    if is_reserved:
+        risk_score = min(risk_score, 15)
+
+    # 6) Clamp score
+    risk_score = max(0, min(100, int(risk_score)))
 
     meta = {
         "report_id": report_id,
         "payload_type": ptype,
         "domain": domain,
-        "dns_resolves": dns_ok if domain else None,
-        "allowlisted": is_allowlisted,
-        "reserved_domain": is_reserved,
-        "shortener": is_shortener,
-        "verdict_band": _verdict_from_score(risk_score),
+        "dns_resolves": bool(dns_ok),
+        "allowlisted": bool(is_allowlisted),
+        "reserved_domain": bool(is_reserved),
+        "shortener": bool(is_shortener),
+        "verdict_band": _verdict_band(risk_score),
     }
 
     analysis = {
-        "payload": payload,
+        "payload": payload if ptype != "vcard" else payload,  # keep original
         "meta": meta,
         "risk_score": risk_score,
         "findings": findings,
@@ -307,11 +330,5 @@ async def analyze_qr_payload(payload: str, report_id: str):
         "ml": ml_result,
     }
 
-    analysis["report_md"] = build_markdown_report({
-        "payload": payload,
-        "meta": meta,
-        "risk_score": risk_score,
-        "ai_report": "",  # no AI
-    })
-
+    analysis["report_md"] = build_markdown_report(analysis)
     return analysis

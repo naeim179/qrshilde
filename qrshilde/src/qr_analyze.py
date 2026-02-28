@@ -6,14 +6,12 @@ from pathlib import Path
 
 from qrshilde.src.ai.analyzer import analyze_qr_payload
 
-
 def decode_qr_from_image(image_path):
     img = cv2.imread(image_path)
     if img is None:
         return None, "Error: Could not read image file."
 
     detector = cv2.QRCodeDetector()
-
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
     data, _, _ = detector.detectAndDecode(img)
@@ -36,7 +34,6 @@ def decode_qr_from_image(image_path):
         return data, None
 
     return None, "No QR code detected (Try checking the image manually)."
-
 
 def main():
     parser = argparse.ArgumentParser(
@@ -70,7 +67,6 @@ def main():
         print("   [..] Decoding QR code from image...")
 
         decoded_text, error = decode_qr_from_image(input_data)
-
         if error:
             print(f"[❌] {error}")
             return
@@ -82,14 +78,13 @@ def main():
         print(f"[📝] Analyzing raw text input...")
 
     print("[+] Running security analysis...")
-    result = asyncio.run(analyze_qr_payload(final_payload, report_id=""))
+    result = asyncio.run(analyze_qr_payload(final_payload, report_id="cli"))
 
     if result and "report_md" in result:
         out_file.write_text(result["report_md"], encoding="utf-8")
         print(f"[+] Report saved successfully to: {out_file}")
     else:
         print("[❌] Analysis failed.")
-
 
 if __name__ == "__main__":
     main()

@@ -20,3 +20,6 @@ qrshilde/src/ml/url_model.pkl
 # Datasets (keep local)
 data/
 *.csv
+
+# allow public env template
+!.env.example

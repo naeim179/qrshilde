@@ -1,7 +1,7 @@
 import os
 import datetime
 
-from qrshilde.src.ml.url_model import MODEL_PATH, model_exists
+from qrshilde.ml.url_model import MODEL_PATH, model_exists
 
 
 def get_ml_status() -> dict:

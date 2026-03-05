@@ -1,6 +1,6 @@
 import os
 import joblib
-from qrshilde.src.ml.url_features import extract_url_features
+from qrshilde.ml.url_features import extract_url_features
 
 MODEL_PATH = os.path.join(os.path.dirname(__file__), "url_model.pkl")
 

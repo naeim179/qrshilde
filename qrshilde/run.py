@@ -9,4 +9,4 @@ if __name__ == "__main__":
     
     print("[+] Starting QrShilde Production Server...")
     # CRITICAL: reload must be False on Windows for Playwright to work
-    uvicorn.run("qrshilde.src.web.app:app", host="0.0.0.0", port=8000, reload=False)
+    uvicorn.run("qrshilde.web.app:app", host="0.0.0.0", port=8000, reload=False)

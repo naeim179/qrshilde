@@ -8,8 +8,8 @@ from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_sc
 
 from xgboost import XGBClassifier
 
-from qrshilde.src.ml.url_features import extract_url_features
-from qrshilde.src.ml.url_model import MODEL_PATH
+from qrshilde.ml.url_features import extract_url_features
+from qrshilde.ml.url_model import MODEL_PATH
 
 
 DATA_PATH = os.path.join("data", "malicious_phish_Dataset.csv")

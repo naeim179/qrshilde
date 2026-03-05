@@ -4,7 +4,7 @@ import cv2
 import asyncio
 from pathlib import Path
 
-from qrshilde.src.ai.analyzer import analyze_qr_payload
+from qrshilde.analysis.analyzer import analyze_qr_payload
 
 def decode_qr_from_image(image_path):
     img = cv2.imread(image_path)

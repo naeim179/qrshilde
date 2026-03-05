@@ -5,11 +5,11 @@ import socket
 import uuid
 from urllib.parse import urlparse
 
-from qrshilde.src.tools.malicious_pattern_detector import scan_for_patterns
-from qrshilde.src.tools.wifi_auto_connect_detector import detect_wifi_threats
-from qrshilde.src.tools.payload_type import detect_payload_type
-from qrshilde.src.ml.url_model import predict_url, model_exists
-from qrshilde.src.ai.report_generator import build_markdown_report
+from qrshilde.detectors.malicious_pattern_detector import scan_for_patterns
+from qrshilde.detectors.wifi_auto_connect_detector import detect_wifi_threats
+from qrshilde.detectors.payload_type import detect_payload_type
+from qrshilde.ml.url_model import predict_url, model_exists
+from qrshilde.analysis.report_generator import build_markdown_report
 
 # -----------------------------
 # Config (Rules + ML ONLY)

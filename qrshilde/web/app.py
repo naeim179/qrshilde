@@ -10,7 +10,7 @@ from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-from qrshilde.src.ai.analyzer import analyze_qr_payload
+from qrshilde.analysis.analyzer import analyze_qr_payload
 
 # Load .env from project root
 ROOT_DIR = Path(__file__).resolve().parents[3]

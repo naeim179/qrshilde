@@ -14,22 +14,34 @@ def _load_model():
 
 
 def get_threshold() -> float:
+    """
+    Default threshold = 0.6 (matches url_model_meta.json suggested_threshold).
+    Override with env var URL_MAL_THRESHOLD.
+    """
     try:
-        return float(os.getenv("URL_MAL_THRESHOLD", "0.31"))
+        return float(os.getenv("URL_MAL_THRESHOLD", "0.6"))
     except Exception:
-        return 0.31
+        return 0.6
 
 
 def predict_url(url: str) -> dict:
     model = _load_model()
     feats, names = extract_url_features(url)
 
-    # predict probability (class 1 = malicious/phishing)
-    proba = model.predict_proba([feats])[0][1]
-    p = float(proba)
+    # Predict probability safely using model.classes_
+    proba_row = model.predict_proba([feats])[0]
+    classes = list(getattr(model, "classes_", []))
+
+    # We treat class "1" as malicious/other per label_mapping in meta.json
+    if 1 in classes:
+        idx_mal = classes.index(1)
+        p = float(proba_row[idx_mal])
+    else:
+        # Fallback (shouldn't usually happen): assume 2nd column is "positive"
+        p = float(proba_row[1]) if len(proba_row) > 1 else float(proba_row[0])
 
     threshold = get_threshold()
-    label = "phishing" if p >= threshold else "benign"
+    label = "malicious" if p >= threshold else "benign"
 
     # Explainability:
     reasons = []
@@ -50,7 +62,8 @@ def predict_url(url: str) -> dict:
         reasons = []
 
     return {
-        "phishing_probability": p,
+        "malicious_probability": p,
+        "phishing_probability": p,  # backward compatibility
         "threshold": threshold,
         "label": label,
         "reasons": reasons,

@@ -238,7 +238,7 @@ async def analyze_qr_payload(payload: str, report_id: str | None = None) -> dict
             url_risk += 25
         else:
             if _domain_in_set(domain, RESERVED_DOMAINS):
-                url_findings.append("URL points to reserved/local domain (test/localhost) - verify intent.")
+                url_findings.append("URL uses a test/documentation domain (example.com/localhost) - verify intent.")
                 url_risk += 10
 
             if _domain_in_set(domain, ALLOWLIST_DOMAINS):

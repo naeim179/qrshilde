@@ -55,3 +55,6 @@ data/
 Thumbs.db
 .vscode/
 .idea/report.md
+
+report.md
+*.disabled

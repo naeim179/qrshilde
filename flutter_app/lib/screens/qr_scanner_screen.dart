@@ -1,76 +1,85 @@
-import 'dart:convert';
-import 'dart:typed_data';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
-import 'package:http/http.dart' as http;
 
-// ignore: invalid_use_of_internal_member  // Or use this if the lint persists
 class QRScannerScreen extends StatefulWidget {
   const QRScannerScreen({super.key});
 
   @override
-  State<QRScannerScreen> createState() => _QRScannerScreenState();  // Keep private
+  State<QRScannerScreen> createState() => _QRScannerScreenState();
 }
 
 class _QRScannerScreenState extends State<QRScannerScreen> {
-  final String backendUrl = 'http://localhost:8000/analyze';  // Your backend URL
+  final MobileScannerController controller = MobileScannerController();
+  bool _handled = false;
 
-  Future<void> _sendImageToBackend(Uint8List imageBytes) async {
-    try {
-      final response = await http.post(
-        Uri.parse(backendUrl),
-        headers: {'Content-Type': 'application/octet-stream'},
-        body: imageBytes,
-      );
+  void _handleDetection(BarcodeCapture capture) {
+    if (_handled) return;
 
-      if (response.statusCode == 200) {
-        final result = jsonDecode(response.body);
-        if (!mounted) return;  // Check if mounted before using context
-        showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: const Text('Analysis Result'),
-            content: Text(
-              'Threat: ${result['analysis']}\n'
-              'Payload: ${result['payload'] ?? 'None'}\n'
-              'Type: ${result['payload_type'] ?? 'Unknown'}\n'
-              'Stego: ${result['stego_detected'] ? 'Yes' : 'No'}',
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('OK'),
-              ),
-            ],
-          ),
-        );
-      } else {
-        if (!mounted) return;
-        _showError('Error: ${response.statusCode}');
-      }
-    } catch (e) {
-      if (!mounted) return;
-      _showError('Failed to send image: $e');
+    final Barcode? barcode =
+        capture.barcodes.isNotEmpty ? capture.barcodes.first : null;
+
+    final String? value = barcode?.rawValue;
+
+    if (value == null || value.trim().isEmpty) {
+      return;
     }
+
+    _handled = true;
+    Navigator.pop(context, value.trim());
   }
 
-  void _showError(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final helperText = kIsWeb
+        ? 'Web camera preview may be unstable. Android is recommended for live scanning.'
+        : 'Point the camera at a QR code to scan and analyze it.';
+
     return Scaffold(
-      appBar: AppBar(title: const Text('QR Scanner')),
-      body: MobileScanner(
-        onDetect: (capture) {
-          final Uint8List? imageBytes = capture.image;
-          if (imageBytes != null) {
-            _sendImageToBackend(imageBytes);
-          } else {
-            _showError('No image captured');
-          }
-        },
+      appBar: AppBar(
+        title: const Text('Scan QR Code'),
+      ),
+      body: Stack(
+        children: [
+          MobileScanner(
+            controller: controller,
+            onDetect: _handleDetection,
+          ),
+          Align(
+            alignment: Alignment.topCenter,
+            child: Container(
+              width: double.infinity,
+              margin: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.55),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                helperText,
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: Colors.white),
+              ),
+            ),
+          ),
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: OutlinedButton.icon(
+                onPressed: () => Navigator.pop(context),
+                icon: const Icon(Icons.keyboard_return),
+                label: const Text('Back'),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

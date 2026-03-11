@@ -9,8 +9,9 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  mobile_scanner: ^4.0.1  # For QR image capture
+  mobile_scanner: ^7.2.0  # For QR image capture
   http: ^1.2.0  # For sending image to backend
+  shared_preferences: ^2.5.4
 
 dev_dependencies:
   flutter_test:

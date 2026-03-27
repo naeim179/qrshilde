@@ -56,7 +56,67 @@ class _AnalyzeScreenState extends State<AnalyzeScreen> {
     });
   }
 
-  // 🔥 FIXED ANALYZE
+  // =============================
+  // 🔥 SECURITY DECISION ENGINE
+  // =============================
+  void _handleSecurityDecision(Map<String, dynamic> result, String payload) {
+    final verdict = (result['verdict'] ?? 'LOW').toString().toUpperCase();
+
+    if (verdict == "HIGH") {
+      showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+          title: const Text("🚨 High Risk"),
+          content: const Text("This QR code is dangerous. Access blocked."),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("OK"),
+            )
+          ],
+        ),
+      );
+    } else if (verdict == "MEDIUM") {
+      showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+          title: const Text("⚠️ Warning"),
+          content: const Text("This QR may be unsafe. Continue?"),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Cancel"),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                _openPayload(payload);
+              },
+              child: const Text("Continue"),
+            ),
+          ],
+        ),
+      );
+    } else {
+      _openPayload(payload);
+    }
+  }
+
+  // =============================
+  // 🔗 OPEN PAYLOAD (SAFE)
+  // =============================
+  Future<void> _openPayload(String payload) async {
+    if (payload.startsWith("http")) {
+      await Clipboard.setData(ClipboardData(text: payload));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Link copied safely")),
+      );
+    }
+  }
+
+  // =============================
+  // 🔍 ANALYZE
+  // =============================
   Future<void> _analyze() async {
     final payload = _controller.text.trim();
 
@@ -80,13 +140,15 @@ class _AnalyzeScreenState extends State<AnalyzeScreen> {
       if (data != null && data["result"] != null) {
         final result = data["result"] as Map<String, dynamic>;
 
-        // حفظ
         await HistoryService.saveEntry(payload: payload, result: result);
         await _loadHistory();
 
         setState(() {
           _result = result;
         });
+
+        // 🔥 SECURITY DECISION
+        _handleSecurityDecision(result, payload);
       } else {
         setState(() {
           _error = "No result returned from API";
@@ -103,6 +165,9 @@ class _AnalyzeScreenState extends State<AnalyzeScreen> {
     }
   }
 
+  // =============================
+  // 📷 SCANNER
+  // =============================
   Future<void> _openScanner() async {
     final scannedPayload = await Navigator.push<String>(
       context,
@@ -112,8 +177,40 @@ class _AnalyzeScreenState extends State<AnalyzeScreen> {
     );
 
     if (scannedPayload != null && scannedPayload.trim().isNotEmpty) {
-      _controller.text = scannedPayload.trim();
-      await _analyze();
+      final payload = scannedPayload.trim();
+      _controller.text = payload;
+
+      setState(() {
+        _loading = true;
+        _error = null;
+        _result = null;
+      });
+
+      try {
+        final data = await ApiService.analyzePayload(payload);
+
+        if (data != null && data["result"] != null) {
+          final result = data;
+
+          await HistoryService.saveEntry(payload: payload, result: result);
+          await _loadHistory();
+
+          setState(() {
+            _result = result;
+          });
+
+          // 🔥 SECURITY DECISION
+          _handleSecurityDecision(result, payload);
+        }
+      } catch (e) {
+        setState(() {
+          _error = e.toString();
+        });
+      } finally {
+        setState(() {
+          _loading = false;
+        });
+      }
     }
   }
 
@@ -127,8 +224,6 @@ class _AnalyzeScreenState extends State<AnalyzeScreen> {
 
   Color _verdictColor(String verdict) {
     switch (verdict.toUpperCase()) {
-      case 'CRITICAL':
-        return Colors.red.shade800;
       case 'HIGH':
         return Colors.red;
       case 'MEDIUM':

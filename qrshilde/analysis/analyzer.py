@@ -1,8 +1,6 @@
 import ipaddress
 from urllib.parse import urlparse
 
-from qrshilde.threat_memory import lookup_known_indicator, save_analysis_result
-
 SHORTENERS = {"bit.ly", "t.co", "tinyurl.com", "goo.gl"}
 SUSPICIOUS_TLDS = [".xyz", ".top", ".tk", ".ml"]
 
@@ -12,6 +10,8 @@ PHISHING_KEYWORDS = [
 ]
 
 DANGEROUS_SCHEMES = {"javascript", "data", "file", "vbscript"}
+
+SPOOF_PATTERNS = ["paypa1", "g00gle", "faceb00k"]
 
 
 def _clamp(v):
@@ -45,8 +45,11 @@ def _analyze_url(url: str):
         points += pts
 
     if scheme in DANGEROUS_SCHEMES:
-        add("Dangerous scheme detected", 70)
+        add("Dangerous scheme detected", 80)
         hard_fail = True
+
+    if scheme != "https":
+        add("Non-HTTPS URL", 25)
 
     if _is_ip(hostname):
         add("IP address used instead of domain", 45)
@@ -60,6 +63,10 @@ def _analyze_url(url: str):
         if phishing_hits >= 2:
             add("Multiple phishing indicators", 20)
 
+    if any(p in hostname for p in SPOOF_PATTERNS):
+        add("Possible domain spoofing", 50)
+        hard_fail = True
+
     if "@" in url:
         add("Obfuscated URL using @ trick", 40)
         hard_fail = True
@@ -71,7 +78,6 @@ def _analyze_url(url: str):
     if tld_flag:
         add("Suspicious domain extension", 30)
 
-    # 🔥 combo attacks
     if phishing_hits > 0 and tld_flag:
         add("Phishing + suspicious domain combo", 30)
         hard_fail = True
@@ -106,39 +112,36 @@ async def analyze_qr_payload(payload: str):
         findings.append(msg)
         score += pts
 
-    # 🔥 MEMORY CHECK
-    memory = lookup_known_indicator(payload)
+    lower = payload.lower()
 
-    if memory:
-        findings.append(f"[MEMORY] {memory['message']}")
+    # 🔴 dangerous schemes
+    if any(lower.startswith(s + ":") for s in DANGEROUS_SCHEMES):
+        add("Dangerous scheme detected", 80)
 
-        findings.append(
-            f"[HISTORY] Seen {memory['seen_count']} time(s), last verdict: {memory['last_verdict']}"
-        )
+    elif lower.startswith("sms:"):
+        add("SMS trigger detected", 60)
 
-        if memory["match_type"] == "exact_payload":
-            score = max(score, 80)
-        elif memory["match_type"] == "domain":
-            score = max(score, 65)
+    elif lower.startswith("tel:"):
+        add("Phone call trigger detected", 50)
 
-    # 🔴 javascript
-    if payload.lower().startswith("javascript:"):
-        add("JavaScript injection detected", 70)
-
-    # 🔴 WIFI
     elif payload.startswith("WIFI:"):
-        add("WiFi auto-connect QR", 30)
+        add("WiFi auto-connect QR", 60)
 
-    # 🔴 URL
+        if "p:12345678" in lower:
+            add("Weak WiFi password", 20)
+
     elif payload.startswith("http") or payload.startswith("www."):
         url_result = _analyze_url(payload)
         score += url_result["points"]
         findings.extend(url_result["findings"])
 
-    # 🔴 text
     else:
-        if any(word in payload.lower() for word in PHISHING_KEYWORDS):
+        if any(word in lower for word in PHISHING_KEYWORDS):
             add("Phishing keywords detected in payload", 20)
+
+    # 🔥 boost
+    if len(findings) >= 3:
+        score += 15
 
     final_score = _clamp(score)
 
@@ -157,11 +160,5 @@ async def analyze_qr_payload(payload: str):
         "findings": findings,
         "confidence": round(min(0.95, 0.5 + final_score / 200), 2),
     }
-
-    # 🔥 SAVE TO MEMORY
-    try:
-        save_analysis_result(result)
-    except:
-        pass
 
     return result

@@ -9,10 +9,13 @@ from qrshilde.analysis.analyzer import analyze_qr_payload
 from qrshilde.analysis.fake_qr_detector import detect_fake_qr
 
 
+# =============================
+# APP INIT
+# =============================
 app = FastAPI(
     title="QRShilde API",
-    version="2.0.0",
-    description="QR security analysis API with Fake QR detection.",
+    version="3.0.0",
+    description="QR Security Analysis API (Production Ready)",
 )
 
 app.add_middleware(
@@ -26,21 +29,20 @@ app.add_middleware(
 UPLOAD_DIR = "static/uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
-# ✅ امتدادات مسموحة فقط
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "webp"}
 
 
-# -----------------------------
-# Models
-# -----------------------------
+# =============================
+# MODELS
+# =============================
 class AnalyzeRequest(BaseModel):
     payload: str = Field(..., min_length=1)
-    image_path: str | None = None
+    image_path: str | None = None  # optional
 
 
-# -----------------------------
-# Health
-# -----------------------------
+# =============================
+# HEALTH
+# =============================
 @app.get("/")
 async def root():
     return {"status": "ok", "service": "qrshilde-api"}
@@ -51,13 +53,13 @@ async def health():
     return {"status": "ok"}
 
 
-# -----------------------------
-# Upload API
-# -----------------------------
+# =============================
+# UPLOAD API
+# =============================
 @app.post("/upload")
 async def upload_qr_image(file: UploadFile = File(...)):
-    # ✅ تحقق من الامتداد
     ext = (file.filename or "").split(".")[-1].lower()
+
     if ext not in ALLOWED_EXTENSIONS:
         raise HTTPException(
             status_code=400,
@@ -70,12 +72,15 @@ async def upload_qr_image(file: UploadFile = File(...)):
     with open(path, "wb") as f:
         f.write(await file.read())
 
-    return {"ok": True, "image_path": path}
+    return {
+        "ok": True,
+        "image_path": path
+    }
 
 
-# -----------------------------
-# Analyze API
-# -----------------------------
+# =============================
+# ANALYZE API (🔥 CLEAN RESPONSE)
+# =============================
 @app.post("/analyze")
 async def analyze(request: AnalyzeRequest):
     payload = (request.payload or "").strip()
@@ -85,7 +90,9 @@ async def analyze(request: AnalyzeRequest):
 
     result = await analyze_qr_payload(payload)
 
-    # 🔥 Fake QR Detection
+    # =============================
+    # 🔥 Fake QR Detection (optional)
+    # =============================
     if request.image_path:
         try:
             fake = detect_fake_qr(request.image_path)
@@ -94,13 +101,24 @@ async def analyze(request: AnalyzeRequest):
             fake_score = fake.get("fake_qr_score", 0)
 
             if fake_score >= 60:
-                # ✅ ادمج السكورين وحدّث كلاهما معاً
-                combined = min(100, result.get("final_score", 0) + 30)
+                combined = min(100, result.get("risk_score", 0) + 30)
+
+                result["risk_score"] = combined
                 result["final_score"] = combined
-                result["risk_score"] = combined  # ✅ synchronized
                 result["verdict"] = "HIGH" if combined >= 70 else "MEDIUM"
 
         except Exception as e:
             result["fake_qr_error"] = str(e)
 
-    return {"ok": True, "result": result}
+    # =============================
+    # 🔥 FINAL CLEAN RESPONSE
+    # =============================
+    return {
+        "ok": True,
+        "payload": result.get("payload"),
+        "risk_score": result.get("risk_score"),
+        "verdict": result.get("verdict"),
+        "findings": result.get("findings"),
+        "confidence": result.get("confidence"),
+        "fake_qr": result.get("fake_qr", None)
+    }

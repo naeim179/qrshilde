@@ -47,3 +47,4 @@ report.md
 .env
 qrshilde/ml/url_model.pkl.disabled
 qrshilde/ml/url_model_meta.json.disabled
+*.db

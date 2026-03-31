@@ -1,0 +1,16 @@
+fastapi
+uvicorn
+python-dotenv
+
+opencv-python
+pillow
+qrcode
+
+numpy
+scikit-learn
+xgboost
+pandas
+joblib
+
+jinja2
+pydantic

@@ -50,7 +50,6 @@ class _AnalyzeScreenState extends State<AnalyzeScreen> {
   Future<void> _loadHistory() async {
     final items = await HistoryService.loadHistory();
     if (!mounted) return;
-
     setState(() {
       _history = items;
     });
@@ -60,39 +59,43 @@ class _AnalyzeScreenState extends State<AnalyzeScreen> {
   // 🔥 SECURITY DECISION ENGINE
   // =============================
   void _handleSecurityDecision(Map<String, dynamic> result, String payload) {
-    final verdict = (result['verdict'] ?? 'LOW').toString().toUpperCase();
+    final verdict = (result['verdict'] ?? 'SAFE').toString().toUpperCase();
 
-    if (verdict == "HIGH") {
+    // ✅ يدعم HIGH/MEDIUM/LOW و MALICIOUS/SUSPICIOUS/SAFE
+    final isMalicious  = verdict == "MALICIOUS" || verdict == "HIGH";
+    final isSuspicious = verdict == "SUSPICIOUS" || verdict == "MEDIUM";
+
+    if (isMalicious) {
       showDialog(
         context: context,
         builder: (_) => AlertDialog(
-          title: const Text("🚨 High Risk"),
-          content: const Text("This QR code is dangerous. Access blocked."),
+          title: const Text("🚨 خطر عالي"),
+          content: const Text("هذا الـ QR Code خطير. تم حظر الوصول."),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text("OK"),
-            )
+              child: const Text("موافق"),
+            ),
           ],
         ),
       );
-    } else if (verdict == "MEDIUM") {
+    } else if (isSuspicious) {
       showDialog(
         context: context,
         builder: (_) => AlertDialog(
-          title: const Text("⚠️ Warning"),
-          content: const Text("This QR may be unsafe. Continue?"),
+          title: const Text("⚠️ تحذير"),
+          content: const Text("هذا الـ QR قد يكون غير آمن. هل تريد المتابعة؟"),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text("Cancel"),
+              child: const Text("إلغاء"),
             ),
             TextButton(
               onPressed: () {
                 Navigator.pop(context);
                 _openPayload(payload);
               },
-              child: const Text("Continue"),
+              child: const Text("متابعة"),
             ),
           ],
         ),
@@ -108,21 +111,22 @@ class _AnalyzeScreenState extends State<AnalyzeScreen> {
   Future<void> _openPayload(String payload) async {
     if (payload.startsWith("http")) {
       await Clipboard.setData(ClipboardData(text: payload));
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Link copied safely")),
+        const SnackBar(content: Text("تم نسخ الرابط بأمان")),
       );
     }
   }
 
   // =============================
-  // 🔍 ANALYZE (FIXED)
+  // 🔍 ANALYZE
   // =============================
   Future<void> _analyze() async {
     final payload = _controller.text.trim();
 
     if (payload.isEmpty) {
       setState(() {
-        _error = 'Please enter or scan a QR payload first.';
+        _error = 'الرجاء إدخال محتوى الـ QR أولاً.';
         _result = null;
       });
       return;
@@ -137,23 +141,18 @@ class _AnalyzeScreenState extends State<AnalyzeScreen> {
     try {
       final data = await ApiService.analyzePayload(payload);
 
-      print("MAIN RECEIVED: $data");
-
-      // 🔥 FIX هنا
       if (data != null) {
-        final result = data;
-
-        await HistoryService.saveEntry(payload: payload, result: result);
+        await HistoryService.saveEntry(payload: payload, result: data);
         await _loadHistory();
 
         setState(() {
-          _result = result;
+          _result = data;
         });
 
-        _handleSecurityDecision(result, payload);
+        _handleSecurityDecision(data, payload);
       } else {
         setState(() {
-          _error = "No result returned from API";
+          _error = "لم يتم استقبال نتيجة من الـ API";
         });
       }
     } catch (e) {
@@ -168,7 +167,7 @@ class _AnalyzeScreenState extends State<AnalyzeScreen> {
   }
 
   // =============================
-  // 📷 SCANNER (FIXED)
+  // 📷 SCANNER
   // =============================
   Future<void> _openScanner() async {
     final scannedPayload = await Navigator.push<String>(
@@ -191,20 +190,15 @@ class _AnalyzeScreenState extends State<AnalyzeScreen> {
       try {
         final data = await ApiService.analyzePayload(payload);
 
-        print("SCANNER RECEIVED: $data");
-
-        // 🔥 FIX هنا
         if (data != null) {
-          final result = data;
-
-          await HistoryService.saveEntry(payload: payload, result: result);
+          await HistoryService.saveEntry(payload: payload, result: data);
           await _loadHistory();
 
           setState(() {
-            _result = result;
+            _result = data;
           });
 
-          _handleSecurityDecision(result, payload);
+          _handleSecurityDecision(data, payload);
         }
       } catch (e) {
         setState(() {
@@ -226,10 +220,15 @@ class _AnalyzeScreenState extends State<AnalyzeScreen> {
     });
   }
 
+  // =============================
+  // 🎨 COLORS & ICONS
+  // =============================
   Color _verdictColor(String verdict) {
     switch (verdict.toUpperCase()) {
+      case 'MALICIOUS':
       case 'HIGH':
         return Colors.red;
+      case 'SUSPICIOUS':
       case 'MEDIUM':
         return Colors.orange;
       default:
@@ -237,24 +236,70 @@ class _AnalyzeScreenState extends State<AnalyzeScreen> {
     }
   }
 
+  IconData _verdictIcon(String verdict) {
+    switch (verdict.toUpperCase()) {
+      case 'MALICIOUS':
+      case 'HIGH':
+        return Icons.dangerous;
+      case 'SUSPICIOUS':
+      case 'MEDIUM':
+        return Icons.warning_amber;
+      default:
+        return Icons.verified;
+    }
+  }
+
+  String _verdictLabel(String verdict) {
+    switch (verdict.toUpperCase()) {
+      case 'MALICIOUS':
+      case 'HIGH':
+        return 'MALICIOUS';
+      case 'SUSPICIOUS':
+      case 'MEDIUM':
+        return 'SUSPICIOUS';
+      default:
+        return 'SAFE';
+    }
+  }
+
+  // =============================
+  // 🧱 UI WIDGETS
+  // =============================
   Widget _buildSummary(Map<String, dynamic> result) {
-    final verdict = result['verdict'] ?? 'LOW';
-    final score = result['risk_score'] ?? 0;
+    final verdict = (result['verdict'] ?? 'SAFE').toString();
+
+    // ✅ FIX: API returns "risk_score" (int 0–100), not "final_score" (double 0.0–1.0)
+    final score = (result['risk_score'] as num? ?? 0).toInt();
+
+    final color = _verdictColor(verdict);
+    final label = _verdictLabel(verdict);
 
     return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(20),
         child: Column(
           children: [
+            Icon(_verdictIcon(verdict), size: 48, color: color),
+            const SizedBox(height: 8),
             Text(
-              verdict,
+              label,
               style: TextStyle(
-                fontSize: 22,
+                fontSize: 24,
                 fontWeight: FontWeight.bold,
-                color: _verdictColor(verdict),
+                color: color,
               ),
             ),
             const SizedBox(height: 8),
+            LinearProgressIndicator(
+              value: score / 100,
+              color: color,
+              backgroundColor: Colors.grey.shade200,
+              minHeight: 8,
+              borderRadius: BorderRadius.circular(4),
+            ),
+            const SizedBox(height: 6),
             Text("Risk Score: $score / 100"),
           ],
         ),
@@ -262,24 +307,30 @@ class _AnalyzeScreenState extends State<AnalyzeScreen> {
     );
   }
 
-  Widget _buildFakeQR(Map<String, dynamic> result) {
-    if (!result.containsKey("fake_qr") || result["fake_qr"] == null) {
-      return const SizedBox();
-    }
-
-    final fake = result["fake_qr"];
-
+  Widget _buildInfoCard(String title, String content, IconData icon) {
+    if (content.isEmpty) return const SizedBox.shrink();
     return Card(
-      color: Colors.red.withOpacity(0.1),
+      margin: const EdgeInsets.only(bottom: 10),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
+        padding: const EdgeInsets.all(14),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text("Fake QR Detection",
-                style: TextStyle(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            Text("Score: ${fake["fake_qr_score"]}"),
-            Text("Risk: ${fake["risk_level"]}"),
+            Icon(icon, size: 22, color: Colors.indigo),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title,
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold, fontSize: 14)),
+                  const SizedBox(height: 4),
+                  Text(content, style: const TextStyle(fontSize: 13)),
+                ],
+              ),
+            ),
           ],
         ),
       ),
@@ -291,16 +342,29 @@ class _AnalyzeScreenState extends State<AnalyzeScreen> {
     final result = _result;
 
     return Scaffold(
-      appBar: AppBar(title: const Text("QRShilde")),
-      body: Padding(
+      appBar: AppBar(
+        title: const Text("QRShilde"),
+        actions: [
+          if (result != null)
+            IconButton(
+              icon: const Icon(Icons.clear),
+              onPressed: _clearAll,
+            )
+        ],
+      ),
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
             TextField(
               controller: _controller,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 labelText: "QR Payload",
-                border: OutlineInputBorder(),
+                border: const OutlineInputBorder(),
+                suffixIcon: IconButton(
+                  icon: const Icon(Icons.clear),
+                  onPressed: _clearAll,
+                ),
               ),
             ),
             const SizedBox(height: 10),
@@ -308,16 +372,24 @@ class _AnalyzeScreenState extends State<AnalyzeScreen> {
             Row(
               children: [
                 Expanded(
-                  child: ElevatedButton(
+                  child: ElevatedButton.icon(
                     onPressed: _loading ? null : _analyze,
-                    child: const Text("Analyze"),
+                    icon: _loading
+                        ? const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.search),
+                    label: const Text("Analyze"),
                   ),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
-                  child: ElevatedButton(
+                  child: ElevatedButton.icon(
                     onPressed: _openScanner,
-                    child: const Text("Scan"),
+                    icon: const Icon(Icons.qr_code_scanner),
+                    label: const Text("Scan"),
                   ),
                 ),
               ],
@@ -326,11 +398,33 @@ class _AnalyzeScreenState extends State<AnalyzeScreen> {
             const SizedBox(height: 10),
 
             if (_error != null)
-              Text(_error!, style: const TextStyle(color: Colors.red)),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.red.shade50,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.red.shade200),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.error_outline, color: Colors.red),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(_error!,
+                          style: const TextStyle(color: Colors.red)),
+                    ),
+                  ],
+                ),
+              ),
 
             if (result != null) ...[
+              const SizedBox(height: 10),
               _buildSummary(result),
-              _buildFakeQR(result),
+              const SizedBox(height: 10),
+              _buildInfoCard("What it is",    result["what_it_is"]    ?? "", Icons.info_outline),
+              _buildInfoCard("What happens",  result["what_happens"]  ?? "", Icons.play_circle_outline),
+              _buildInfoCard("Why dangerous", result["why_dangerous"] ?? "", Icons.security),
+              _buildInfoCard("What to do",    result["what_to_do"]    ?? "", Icons.check_circle_outline),
             ],
           ],
         ),

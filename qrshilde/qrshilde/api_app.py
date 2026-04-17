@@ -18,10 +18,11 @@ app = FastAPI(
     description="QR Security Analysis API (Production Ready)",
 )
 
+# ✅ FIX: allow_credentials=True is incompatible with allow_origins=["*"]
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=True,
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -37,7 +38,11 @@ ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "webp"}
 # =============================
 class AnalyzeRequest(BaseModel):
     payload: str = Field(..., min_length=1)
-    image_path: str | None = None  # optional
+    image_path: str | None = None
+
+
+class TextPayloadRequest(BaseModel):
+    payload: str = Field(..., min_length=1)
 
 
 # =============================
@@ -79,30 +84,20 @@ async def upload_qr_image(file: UploadFile = File(...)):
 
 
 # =============================
-# ANALYZE API (🔥 CLEAN RESPONSE)
+# SHARED ANALYSIS HELPER
 # =============================
-@app.post("/analyze")
-async def analyze(request: AnalyzeRequest):
-    payload = (request.payload or "").strip()
-
-    if not payload:
-        raise HTTPException(status_code=400, detail="Payload empty")
-
+async def _analyze_payload(payload: str, image_path: str | None = None) -> dict:
+    """Core logic shared by all analyze endpoints."""
     result = await analyze_qr_payload(payload)
 
-    # =============================
-    # 🔥 Fake QR Detection (optional)
-    # =============================
-    if request.image_path:
+    if image_path:
         try:
-            fake = detect_fake_qr(request.image_path)
+            fake = detect_fake_qr(image_path)
             result["fake_qr"] = fake
 
             fake_score = fake.get("fake_qr_score", 0)
-
             if fake_score >= 60:
                 combined = min(100, result.get("risk_score", 0) + 30)
-
                 result["risk_score"] = combined
                 result["final_score"] = combined
                 result["verdict"] = "HIGH" if combined >= 70 else "MEDIUM"
@@ -110,15 +105,43 @@ async def analyze(request: AnalyzeRequest):
         except Exception as e:
             result["fake_qr_error"] = str(e)
 
-    # =============================
-    # 🔥 FINAL CLEAN RESPONSE
-    # =============================
     return {
-        "ok": True,
-        "payload": result.get("payload"),
+        "ok":         True,
+        "payload":    result.get("payload"),
         "risk_score": result.get("risk_score"),
-        "verdict": result.get("verdict"),
-        "findings": result.get("findings"),
+        "verdict":    result.get("verdict"),
+        "findings":   result.get("findings"),
         "confidence": result.get("confidence"),
-        "fake_qr": result.get("fake_qr", None)
+        "fake_qr":    result.get("fake_qr", None),
     }
+
+
+# =============================
+# ANALYZE API — from image upload
+# =============================
+@app.post("/analyze")
+async def analyze(request: AnalyzeRequest):
+    payload = (request.payload or "").strip()
+    if not payload:
+        raise HTTPException(status_code=400, detail="Payload empty")
+    return await _analyze_payload(payload, request.image_path)
+
+
+# =============================
+# ANALYZE TEXT — Flutter uses these
+# =============================
+@app.post("/analyze-text")
+async def analyze_text(body: TextPayloadRequest):
+    payload = (body.payload or "").strip()
+    if not payload:
+        raise HTTPException(status_code=400, detail="Payload empty")
+    return await _analyze_payload(payload)
+
+
+@app.post("/analyze-text-json")
+async def analyze_text_json(body: TextPayloadRequest):
+    """Alias for /analyze-text — same behavior."""
+    payload = (body.payload or "").strip()
+    if not payload:
+        raise HTTPException(status_code=400, detail="Payload empty")
+    return await _analyze_payload(payload)

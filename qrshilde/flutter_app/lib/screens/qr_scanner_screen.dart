@@ -1,6 +1,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'dart:typed_data';
 
 class QRScannerScreen extends StatefulWidget {
   const QRScannerScreen({super.key});
@@ -10,23 +13,30 @@ class QRScannerScreen extends StatefulWidget {
 }
 
 class _QRScannerScreenState extends State<QRScannerScreen> {
-  final MobileScannerController controller = MobileScannerController();
+  final MobileScannerController controller = MobileScannerController(
+    detectionSpeed: DetectionSpeed.normal,
+    facing: CameraFacing.back,
+    torchEnabled: false,
+  );
+
   bool _handled = false;
 
-  void _handleDetection(BarcodeCapture capture) {
+  void _handleDetection(BarcodeCapture capture) async {
     if (_handled) return;
+    if (capture.barcodes.isEmpty) return;
 
-    final Barcode? barcode =
-        capture.barcodes.isNotEmpty ? capture.barcodes.first : null;
+    final barcode = capture.barcodes.first;
+    final String? rawValue = barcode.rawValue;
 
-    final String? value = barcode?.rawValue;
-
-    if (value == null || value.trim().isEmpty) {
-      return;
-    }
+    if (rawValue == null || rawValue.trim().isEmpty) return;
 
     _handled = true;
-    Navigator.pop(context, value.trim());
+    controller.stop();
+
+    if (!mounted) return;
+
+    // ✅ رجّع الـ payload مباشرة للـ main screen يحلله
+    Navigator.pop(context, rawValue.trim());
   }
 
   @override
@@ -38,8 +48,8 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
   @override
   Widget build(BuildContext context) {
     final helperText = kIsWeb
-        ? 'Web camera preview may be unstable. Android is recommended for live scanning.'
-        : 'Point the camera at a QR code to scan and analyze it.';
+        ? 'Web camera preview may be unstable. Android is recommended.'
+        : 'وجّه الكاميرا على الـ QR Code';
 
     return Scaffold(
       appBar: AppBar(
@@ -68,11 +78,26 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
               ),
             ),
           ),
+          // إطار توجيه للمستخدم
+          Center(
+            child: Container(
+              width: 250,
+              height: 250,
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.green, width: 3),
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+          ),
           Align(
             alignment: Alignment.bottomCenter,
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: OutlinedButton.icon(
+                style: OutlinedButton.styleFrom(
+                  backgroundColor: Colors.black54,
+                  foregroundColor: Colors.white,
+                ),
                 onPressed: () => Navigator.pop(context),
                 icon: const Icon(Icons.keyboard_return),
                 label: const Text('Back'),

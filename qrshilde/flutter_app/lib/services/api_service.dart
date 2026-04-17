@@ -1,85 +1,78 @@
 import 'dart:io';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:flutter/foundation.dart';
 
 class ApiService {
-  // 🔥 IP اللابتوب الصحيح
+  // ⚠️ غير هذا العنوان إلى IP جهازك الحالي
   static const String baseUrl = "http://192.168.100.38:8000";
-
   // =============================
-  // 📤 Upload Image
+  // 🔍 Analyze QR from Image File (للمسح بالكاميرا)
   // =============================
-  static Future<String?> uploadImage(File file) async {
+  static Future<Map<String, dynamic>?> analyzeImage(File imageFile) async {
     try {
       var request = http.MultipartRequest(
         'POST',
-        Uri.parse('$baseUrl/upload'),
+        Uri.parse('$baseUrl/analyze'),
       );
 
       request.files.add(
-        await http.MultipartFile.fromPath('file', file.path),
+        await http.MultipartFile.fromPath('file', imageFile.path),
       );
 
-      var res = await request.send();
+      var response = await request.send();
+      final body = await response.stream.bytesToString();
 
-      print("UPLOAD STATUS: ${res.statusCode}");
+      print("📡 Status: ${response.statusCode}");
+      print("📦 Response: $body");
 
-      if (res.statusCode == 200) {
-        final body = await res.stream.bytesToString();
-        print("UPLOAD BODY: $body");
-
-        final data = jsonDecode(body);
-        return data["image_path"];
+      if (response.statusCode == 200) {
+        return jsonDecode(body);
       } else {
-        print("Upload failed: ${res.statusCode}");
+        print("❌ API Error: ${response.statusCode}");
+        return null;
       }
     } catch (e) {
-      print("Upload error: $e");
+      print("❌ Connection error: $e");
+      return null;
     }
-    return null;
   }
 
   // =============================
-  // 🔍 Analyze
+  // 🔍 Analyze Payload Directly (للنص المباشر)
   // =============================
-  static Future<Map<String, dynamic>?> analyze(
-      String payload, String? imagePath) async {
+  static Future<Map<String, dynamic>?> analyzePayload(String payload) async {
     try {
-      final res = await http.post(
-        Uri.parse('$baseUrl/analyze'),
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode({
-          "payload": payload,
-          if (imagePath != null) "image_path": imagePath,
-        }),
+      final response = await http.post(
+        Uri.parse('$baseUrl/analyze-text-json'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'payload': payload}),
       );
 
-      // 🔥 Debug
-      print("ANALYZE STATUS: ${res.statusCode}");
-      print("ANALYZE BODY: ${res.body}");
+      print("📡 Status: ${response.statusCode}");
+      print("📦 Response: ${response.body}");
 
-      if (res.statusCode == 200) {
-        final data = jsonDecode(res.body);
-
-        print("API DATA: $data");
-
-        // ✅ رجّع البيانات مباشرة بدون شروط
-        return data;
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
       } else {
-        print("Analyze failed: ${res.statusCode}");
+        print("❌ API Error: ${response.statusCode}");
+        return null;
       }
     } catch (e) {
-      print("Analyze error: $e");
+      print("❌ Connection error: $e");
+      return null;
     }
-
-    return null;
   }
 
   // =============================
-  // 🔄 Analyze Payload Only
+  // 🩺 Health Check
   // =============================
-  static Future<Map<String, dynamic>?> analyzePayload(
-      String payload) async {
-    return await analyze(payload, null);
+  static Future<bool> healthCheck() async {
+    try {
+      final response = await http.get(Uri.parse('$baseUrl/health'));
+      return response.statusCode == 200;
+    } catch (e) {
+      return false;
+    }
   }
 }

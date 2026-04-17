@@ -48,3 +48,19 @@ report.md
 qrshilde/ml/url_model.pkl.disabled
 qrshilde/ml/url_model_meta.json.disabled
 *.db
+
+# AI Models - too large for GitHub (1.7GB)
+local_ai/models/
+local_ai/__pycache__/
+qrshilde/__pycache__/
+**/__pycache__/
+*.keras
+*.pt
+*.bin
+*.safetensors
+*.onnx
+.venv/
+*.pyc
+
+# Ignore entire local_ai folder
+local_ai/
